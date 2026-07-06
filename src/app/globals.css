@@ -5,18 +5,22 @@
   --color-foreground: #ededed;
 }
 
+html {
+  color-scheme: dark;
+}
+
 @utility glass {
   background: rgba(20, 20, 25, 0.5);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 @utility glass-card {
   background: linear-gradient(145deg, rgba(30, 30, 40, 0.6) 0%, rgba(20, 20, 30, 0.4) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
@@ -62,7 +66,7 @@ input::-ms-clear {
 
 @utility glass-input {
   background: rgba(10, 10, 15, 0.4);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
 }
@@ -70,10 +74,6 @@ input::-ms-clear {
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
-  background-image:
-    radial-gradient(circle at 15% 50%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(129, 140, 248, 0.12) 0%, transparent 50%);
-  background-attachment: fixed;
   min-height: 100vh;
 }
 

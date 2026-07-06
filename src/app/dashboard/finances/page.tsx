@@ -111,10 +111,10 @@ export default function FinancesPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
+    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in relative">
       <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">Finances</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Finances</h1>
           <p className="hidden lg:block text-zinc-400 text-sm">Track payouts, expenses, and manage the band fund.</p>
         </div>
         {bandRole === "ADMIN" && (
@@ -130,7 +130,7 @@ export default function FinancesPage() {
         )}
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card p-6 rounded-3xl relative overflow-hidden group">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-zinc-400">Total Income</h3>
@@ -138,7 +138,7 @@ export default function FinancesPage() {
               <ArrowUpRight className="w-4 h-4 text-emerald-500" />
             </div>
           </div>
-          <p className="text-4xl font-extrabold text-white">${totalIncome.toFixed(2)}</p>
+          <p className="text-3xl font-extrabold text-white">${totalIncome.toFixed(2)}</p>
         </motion.div>
         
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card p-6 rounded-3xl relative overflow-hidden group">
@@ -148,7 +148,7 @@ export default function FinancesPage() {
               <ArrowDownRight className="w-4 h-4 text-red-500" />
             </div>
           </div>
-          <p className="text-4xl font-extrabold text-white">${totalExpenses.toFixed(2)}</p>
+          <p className="text-3xl font-extrabold text-white">${totalExpenses.toFixed(2)}</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card p-6 rounded-3xl relative overflow-hidden group">
@@ -158,7 +158,7 @@ export default function FinancesPage() {
               <Wallet className="w-4 h-4 text-indigo-500" />
             </div>
           </div>
-          <p className={`text-4xl font-extrabold ${netBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+          <p className={`text-3xl font-extrabold ${netBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
             ${netBalance.toFixed(2)}
           </p>
         </motion.div>

@@ -144,6 +144,13 @@ export default function RegisterPage() {
             </Link>
           </div>
 
+          {/* Desktop Form Logo (Subtle) */}
+          <div className="hidden lg:flex mb-10 items-center justify-start gap-2">
+            <Link href="/" className="text-3xl font-extrabold text-white tracking-tight hover:opacity-80 transition-opacity">
+              Gig<span className="text-indigo-400">Spot.</span>
+            </Link>
+          </div>
+
           <div className="text-center lg:text-left mb-10">
             <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
             <p className="text-sm text-zinc-400">Join GigSpot as an independent musician.</p>

@@ -107,10 +107,10 @@ export default function RepertoirePage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
+    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in relative">
       <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">Repertoire</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Master Repertoire</h1>
           <p className="hidden lg:block text-zinc-400 text-sm">Manage your master song list and AR tracking data.</p>
         </div>
         {bandRole === "ADMIN" && (

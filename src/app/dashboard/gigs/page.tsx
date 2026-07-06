@@ -259,16 +259,16 @@ END:VCALENDAR`;
   const nextGig = gigs.filter(g => new Date(g.date) >= new Date(new Date().setHours(0,0,0,0)))[0] || null;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
+    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in relative">
       <header>
-        <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">Gigs & Schedules</h1>
+        <h1 className="text-2xl font-bold text-white mb-2">Gigs & Schedules</h1>
         <p className="hidden lg:block text-zinc-400 text-sm">Manage your upcoming performances and view logistical details.</p>
       </header>
 
       {isLoading ? (
         <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
           {/* Main Content Column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Next Gig Highlight */}
@@ -284,7 +284,7 @@ END:VCALENDAR`;
               
               {nextGig ? (
                 <>
-                  <h2 className="text-3xl lg:text-4xl font-extrabold text-white mb-4 lg:mb-6">{nextGig.title}</h2>
+                  <h2 className="text-2xl lg:text-3xl font-extrabold text-white mb-4 lg:mb-6">{nextGig.title}</h2>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-zinc-400 text-sm">
