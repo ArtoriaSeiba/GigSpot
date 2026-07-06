@@ -108,7 +108,7 @@ export default function RepertoirePage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Repertoire</h1>
           <p className="text-zinc-400 text-sm">Manage your master song list and AR tracking data.</p>
@@ -118,7 +118,7 @@ export default function RepertoirePage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => openModal()}
-            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+            className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
           >
             <Plus className="w-5 h-5" />
             Add Song
@@ -139,7 +139,9 @@ export default function RepertoirePage() {
               <p className="text-zinc-400">Add some songs to start building your master setlist.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
@@ -193,6 +195,60 @@ export default function RepertoirePage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-4">
+              <AnimatePresence>
+                {songs.map((song) => (
+                  <motion.div 
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    key={song.id} 
+                    className="glass-card rounded-2xl p-4 border border-zinc-800/80 bg-zinc-900/30"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shrink-0">
+                        <Music4 className="w-5 h-5 text-indigo-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-zinc-200 text-lg leading-tight">{song.title}</h4>
+                        <p className="text-sm text-zinc-400">{song.artist || "Unknown Artist"}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-black/20 rounded-xl p-3 border border-zinc-800/50">
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Key</p>
+                        <p className="text-sm font-mono text-zinc-300">{song.key || "-"}</p>
+                      </div>
+                      <div className="bg-black/20 rounded-xl p-3 border border-zinc-800/50">
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Tempo</p>
+                        <p className="text-sm font-mono text-zinc-300">{song.tempo ? `${song.tempo} BPM` : "-"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-zinc-800/50 pt-4 mt-2">
+                      <Link href={`/dashboard/rehearse/${song.id}`} className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-wider bg-cyan-500/10 px-4 py-2 rounded-xl border border-cyan-500/20 text-center flex-1 mr-2">
+                        Launch AR
+                      </Link>
+                      {bandRole === "ADMIN" && (
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => openModal(song)} className="p-2 glass text-zinc-400 hover:text-indigo-400 rounded-xl transition-colors border border-transparent hover:border-indigo-500/30 bg-transparent hover:bg-indigo-500/10">
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(song.id)} className="p-2 glass text-zinc-400 hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30 bg-transparent hover:bg-red-500/10">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+            </>
           )}
         </div>
       )}

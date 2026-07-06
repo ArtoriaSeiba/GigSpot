@@ -112,7 +112,7 @@ export default function FinancesPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Finances</h1>
           <p className="text-zinc-400 text-sm">Track payouts, expenses, and manage the band fund.</p>
@@ -122,7 +122,7 @@ export default function FinancesPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => openModal()}
-            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
+            className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
           >
             <Plus className="w-5 h-5" />
             New Transaction
@@ -178,25 +178,25 @@ export default function FinancesPage() {
                 <motion.div 
                   initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 * i }}
                   key={tx.id} 
-                  className="flex items-center justify-between p-4 rounded-2xl bg-black/20 hover:bg-black/40 transition-colors border border-zinc-800 group"
+                  className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl bg-black/20 hover:bg-black/40 transition-colors border border-zinc-800 group gap-4 md:gap-0"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'INCOME' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                  <div className="flex items-start md:items-center gap-4 w-full md:w-auto">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-1 md:mt-0 ${tx.type === 'INCOME' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                       {tx.type === 'INCOME' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
                     </div>
-                    <div>
-                      <p className="font-medium text-zinc-200">{tx.description}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-zinc-200 truncate">{tx.description}</p>
                       <p className="text-xs text-zinc-500">{new Date(tx.date).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-between md:justify-end w-full md:w-auto pl-14 md:pl-0">
                     <p className={`font-bold ${tx.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
                       {tx.type === 'INCOME' ? '+' : '-'}${tx.amount.toFixed(2)}
                     </p>
                     {bandRole === "ADMIN" && (
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 border-l border-zinc-800 pl-4">
-                        <button onClick={() => openModal(tx)} className="text-zinc-500 hover:text-indigo-400"><Edit2 className="w-4 h-4" /></button>
-                        <button onClick={() => handleDelete(tx.id)} className="text-zinc-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+                      <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center gap-2 md:border-l md:border-zinc-800 md:pl-4 md:ml-4">
+                        <button onClick={() => openModal(tx)} className="p-2 md:p-0 bg-zinc-800/50 md:bg-transparent rounded-lg text-zinc-400 hover:text-indigo-400"><Edit2 className="w-4 h-4 md:w-4 md:h-4" /></button>
+                        <button onClick={() => handleDelete(tx.id)} className="p-2 md:p-0 bg-zinc-800/50 md:bg-transparent rounded-lg text-zinc-400 hover:text-red-400"><Trash2 className="w-4 h-4 md:w-4 md:h-4" /></button>
                       </div>
                     )}
                   </div>

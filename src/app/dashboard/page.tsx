@@ -88,7 +88,7 @@ export default function OverviewDashboard() {
           
           {/* HERO NEXT GIG CARD */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="lg:col-span-8">
-            <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-zinc-950/50 to-zinc-950/80 relative overflow-hidden h-full flex flex-col justify-center min-h-[280px]">
+            <div className="glass-card rounded-[2rem] p-6 md:p-10 border border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-zinc-950/50 to-zinc-950/80 relative overflow-hidden h-full flex flex-col justify-center min-h-[280px]">
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none -z-10" />
               
               {data.nextGigs?.length > 0 ? (
@@ -100,19 +100,19 @@ export default function OverviewDashboard() {
                       </div>
                       <span className="text-zinc-500 text-sm font-medium">{data.nextGigs[0].band.name}</span>
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight leading-tight">{data.nextGigs[0].title}</h2>
-                    <div className="flex flex-wrap items-center gap-6 text-zinc-300">
+                    <h2 className="text-3xl md:text-5xl font-black text-white mb-4 md:mb-6 tracking-tight leading-tight">{data.nextGigs[0].title}</h2>
+                    <div className="flex flex-wrap items-center gap-3 md:gap-6 text-zinc-300">
                       <div className="flex items-center gap-2 bg-black/20 px-4 py-2 rounded-xl">
-                        <Calendar className="w-5 h-5 text-indigo-400"/> 
-                        <span className="font-medium">{new Date(data.nextGigs[0].date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        <Calendar className="w-4 h-4 md:w-5 md:h-5 text-indigo-400"/> 
+                        <span className="font-medium text-sm md:text-base">{new Date(data.nextGigs[0].date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                       </div>
                       <div className="flex items-center gap-2 bg-black/20 px-4 py-2 rounded-xl">
-                        <MapPin className="w-5 h-5 text-emerald-400"/> 
-                        <span className="font-medium">{data.nextGigs[0].venue}</span>
+                        <MapPin className="w-4 h-4 md:w-5 md:h-5 text-emerald-400"/> 
+                        <span className="font-medium text-sm md:text-base">{data.nextGigs[0].venue}</span>
                       </div>
                     </div>
                   </div>
-                  <Link href={`/dashboard/gigs/${data.nextGigs[0].id}`} className="shrink-0 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/20 flex items-center gap-3 hover:scale-105 active:scale-95">
+                  <Link href={`/dashboard/gigs/${data.nextGigs[0].id}`} className="shrink-0 w-full md:w-auto justify-center px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/20 flex items-center gap-3 hover:scale-105 active:scale-95">
                     Manage Gig <ArrowRight className="w-5 h-5" />
                   </Link>
                 </div>
@@ -128,37 +128,37 @@ export default function OverviewDashboard() {
 
           {/* HIGH-LEVEL STATS GRID */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="lg:col-span-4 grid grid-cols-2 gap-4 md:gap-6">
-            <div className="glass-card rounded-[2rem] p-6 border border-zinc-800/80 hover:border-emerald-500/30 transition-colors flex flex-col justify-center items-center text-center group">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <CheckSquare className="w-7 h-7" />
+            <div className="glass-card rounded-[2rem] p-4 md:p-6 border border-zinc-800/80 hover:border-emerald-500/30 transition-colors flex flex-col justify-center items-center text-center group">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <CheckSquare className="w-6 h-6 md:w-7 md:h-7" />
               </div>
-              <p className="text-4xl font-black text-white mb-1">{data.totalStats.members}</p>
-              <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Members</p>
+              <p className="text-3xl md:text-4xl font-black text-white mb-1">{data.totalStats.members}</p>
+              <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-widest">Members</p>
             </div>
-            <div className="glass-card rounded-[2rem] p-6 border border-zinc-800/80 hover:border-cyan-500/30 transition-colors flex flex-col justify-center items-center text-center group">
-              <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Music2 className="w-7 h-7" />
+            <div className="glass-card rounded-[2rem] p-4 md:p-6 border border-zinc-800/80 hover:border-cyan-500/30 transition-colors flex flex-col justify-center items-center text-center group">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Music2 className="w-6 h-6 md:w-7 md:h-7" />
               </div>
-              <p className="text-4xl font-black text-white mb-1">{data.totalStats.songs}</p>
-              <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Songs</p>
+              <p className="text-3xl md:text-4xl font-black text-white mb-1">{data.totalStats.songs}</p>
+              <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-widest">Songs</p>
             </div>
-            <div className="glass-card rounded-[2rem] p-6 border border-zinc-800/80 hover:border-amber-500/30 transition-colors flex flex-col justify-center items-center text-center group col-span-2">
-              <div className="flex items-center gap-4 w-full">
-                <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <Briefcase className="w-7 h-7" />
+            <div className="glass-card rounded-[2rem] p-4 md:p-6 border border-zinc-800/80 hover:border-amber-500/30 transition-colors flex flex-col justify-center items-center text-center group col-span-2">
+              <div className="flex items-center gap-4 w-full justify-center md:justify-start">
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <Briefcase className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
                 <div className="text-left">
-                  <p className="text-3xl font-black text-white">{data.totalStats.gear}</p>
-                  <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Gear Items Managed</p>
+                  <p className="text-2xl md:text-3xl font-black text-white">{data.totalStats.gear}</p>
+                  <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-widest">Gear Items Managed</p>
                 </div>
               </div>
             </div>
           </motion.div>
 
           {/* PENDING TASKS */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="lg:col-span-8 glass-card rounded-[2rem] p-8 border border-zinc-800/80">
-             <div className="flex items-center justify-between mb-6">
-               <h3 className="text-2xl font-black text-white">Pending Tasks</h3>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="lg:col-span-8 glass-card rounded-[2rem] p-5 md:p-8 border border-zinc-800/80">
+             <div className="flex items-center justify-between mb-4 md:mb-6">
+               <h3 className="text-xl md:text-2xl font-black text-white">Pending Tasks</h3>
                <Link href="/dashboard/tasks" className="text-sm text-indigo-400 hover:text-indigo-300 font-bold transition-colors flex items-center gap-1">
                  View All <ArrowRight className="w-4 h-4" />
                </Link>
@@ -190,13 +190,13 @@ export default function OverviewDashboard() {
           </motion.div>
           
           {/* MY BANDS */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="lg:col-span-4 glass-card rounded-[2rem] p-8 border border-zinc-800/80 flex flex-col relative overflow-hidden self-start">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="hidden lg:flex lg:col-span-4 glass-card rounded-[2rem] p-5 md:p-8 border border-zinc-800/80 flex-col relative overflow-hidden self-start">
              <div className="flex items-center justify-between mb-6 relative z-10">
                <div className="flex items-center gap-4">
-                 <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
-                    <Users className="w-7 h-7" />
+                 <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
+                    <Users className="w-6 h-6 md:w-7 md:h-7" />
                  </div>
-                 <h3 className="text-2xl font-black text-white">My Bands</h3>
+                 <h3 className="text-xl md:text-2xl font-black text-white">My Bands</h3>
                </div>
                <button onClick={() => setIsCreateBandModalOpen(true)} className="p-3 glass text-indigo-300 hover:text-white rounded-xl transition-all border border-indigo-500/20 hover:border-indigo-400/50 hover:bg-indigo-500/20">
                  <Plus className="w-5 h-5" />
