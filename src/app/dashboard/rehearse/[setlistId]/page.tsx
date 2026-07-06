@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Camera, ShieldAlert, SkipBack, SkipForward, Play } from "lucide-react";
 
-export default function WebARRehearsalPage({ params }: { params: { setlistId: string } }) {
+export default function WebARRehearsalPage({ params }: { params: Promise<{ setlistId: string }> }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);

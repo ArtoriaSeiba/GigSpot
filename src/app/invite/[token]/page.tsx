@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, ShieldAlert, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function InvitePage({ params }: { params: { token: string } }) {
+export default function InvitePage({ params }: { params: Promise<{ token: string }> }) {
+  const resolvedParams = use(params);
+  const token = resolvedParams.token;
   const router = useRouter();
   const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
   const [message, setMessage] = useState("Joining band...");
@@ -16,7 +18,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
         const res = await fetch("/api/band/join", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: params.token })
+          body: JSON.stringify({ token: token })
         });
         
         const data = await res.json();
@@ -35,7 +37,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
             setMessage("Please log in or create an account first to join the band.");
             setTimeout(() => {
               // Store token in session storage or cookie so we can redirect back after login
-              sessionStorage.setItem("pendingInvite", params.token);
+              sessionStorage.setItem("pendingInvite", token);
               router.push("/auth/signin");
             }, 3000);
           } else {
@@ -48,10 +50,10 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       }
     };
 
-    if (params.token) {
+    if (token) {
       joinBand();
     }
-  }, [params.token, router]);
+  }, [token, router]);
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">

@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 export async function POST(
   req: Request,
-  { params }: { params: { gigId: string } }
+  { params }: { params: Promise<{ gigId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
