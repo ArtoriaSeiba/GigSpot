@@ -268,11 +268,11 @@ END:VCALENDAR`;
       {isLoading ? (
         <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>
       ) : (
-        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 items-start">
-          {/* Main Content Column flattened */}
-          <>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+          {/* Main Content Column */}
+          <div className="lg:col-span-2 space-y-6">
             {/* Next Gig Highlight */}
-            <div className="lg:col-span-8 order-1 lg:order-none glass-card rounded-3xl p-6 relative overflow-hidden group">
+            <div className="glass-card rounded-3xl p-6 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 md:p-6 opacity-10 group-hover:opacity-20 transition-opacity">
               <CalendarPlus className="w-20 h-20 md:w-32 md:h-32 text-indigo-400" />
             </div>
@@ -348,7 +348,7 @@ END:VCALENDAR`;
           </div>
 
           {/* All Upcoming Gigs (Moved to main column) */}
-          <div className="lg:col-span-8 order-3 lg:order-none glass-card rounded-3xl p-6">
+          <div className="glass-card rounded-3xl p-6">
             <h3 className="text-lg font-bold text-white mb-4">All Upcoming</h3>
             <div className="space-y-3">
               {gigs.filter(g => new Date(g.date) >= new Date(new Date().setHours(0,0,0,0))).length === 0 && <p className="text-sm text-zinc-500">None scheduled</p>}
@@ -418,11 +418,11 @@ END:VCALENDAR`;
               </AnimatePresence>
             </div>
           </div>
-        </>
+        </div>
 
-        {/* Sidebar Column flattened */}
-        <>
-          <div className="lg:col-span-4 order-2 lg:order-none glass-card rounded-3xl p-6">
+        {/* Sidebar Column */}
+        <div className="space-y-6">
+          <div className="glass-card rounded-3xl p-6">
               <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
               <div className="space-y-3">
                 {bandRole === "ADMIN" && (
@@ -454,7 +454,7 @@ END:VCALENDAR`;
             </div>
 
             {/* Past Gigs */}
-            <div className="lg:col-span-4 order-4 lg:order-none glass-card rounded-3xl p-6 mt-6 lg:mt-0">
+            <div className="glass-card rounded-3xl p-6 mt-6">
               <h3 className="text-lg font-bold text-zinc-400 mb-4">Past Gigs</h3>
               <div className="space-y-4">
                 {gigs.filter(g => new Date(g.date) < new Date(new Date().setHours(0,0,0,0))).length === 0 && <p className="text-sm text-zinc-500">No past gigs</p>}
@@ -514,7 +514,7 @@ END:VCALENDAR`;
                 </AnimatePresence>
               </div>
             </div>
-          </>
+          </div>
         </div>
       )}
 
