@@ -170,20 +170,28 @@ export default function OverviewDashboard() {
                   </div>
                 )}
                 {data.recentTasks?.map((task: any) => (
-                  <div key={task.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-800/50 transition-colors gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-3 h-3 mt-1.5 rounded-full shrink-0 ${task.status === 'IN_PROGRESS' ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'bg-zinc-600'}`} />
-                      <div>
-                        <span className="text-base text-zinc-200 font-bold block mb-1">{task.title}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-zinc-500 bg-black/20 px-2 py-1 rounded-md font-medium">{task.band.name}</span>
-                          {task.assignedName && <span className="text-xs text-zinc-500">Assigned: {task.assignedName}</span>}
-                        </div>
+                  <div key={task.id} className="flex flex-col gap-3 p-4 rounded-2xl bg-zinc-900/40 border border-zinc-800/80 hover:bg-zinc-900/60 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-2.5 h-2.5 mt-1.5 rounded-full shrink-0 ${task.status === 'IN_PROGRESS' ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]' : 'bg-zinc-600'}`} />
+                        <span className="text-base text-zinc-200 font-bold leading-tight">{task.title}</span>
                       </div>
+                      <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 border ${task.status === 'IN_PROGRESS' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50'}`}>
+                        {task.status.replace("_", " ")}
+                      </span>
                     </div>
-                    <span className="text-xs text-zinc-400 font-bold bg-zinc-950 px-3 py-1.5 rounded-lg border border-zinc-800 whitespace-nowrap">
-                      {task.status.replace("_", " ")}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-3 pl-6">
+                      <span className="text-[11px] font-medium text-zinc-500 flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded-md">
+                        <Music2 className="w-3.5 h-3.5 text-zinc-600" />
+                        {task.band.name}
+                      </span>
+                      {task.assignedName && (
+                        <span className="text-[11px] font-medium text-zinc-500 flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-zinc-600" />
+                          {task.assignedName}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
              </div>
