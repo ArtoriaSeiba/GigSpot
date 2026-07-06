@@ -196,7 +196,7 @@ export default function OverviewDashboard() {
           </motion.div>
           
           {/* MY BANDS */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="hidden lg:flex lg:col-span-4 glass-card rounded-[2rem] p-5 md:p-8 border border-zinc-800/80 flex-col relative overflow-hidden self-start">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="flex lg:col-span-4 glass-card rounded-[2rem] p-5 md:p-8 border border-zinc-800/80 flex-col relative overflow-hidden self-start">
              <div className="flex items-center justify-between mb-6 relative z-10">
                <div className="flex items-center gap-4">
                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
