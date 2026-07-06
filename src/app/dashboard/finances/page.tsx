@@ -194,9 +194,9 @@ export default function FinancesPage() {
                       {tx.type === 'INCOME' ? '+' : '-'}${tx.amount.toFixed(2)}
                     </p>
                     {bandRole === "ADMIN" && (
-                      <div className="transition-opacity flex items-center gap-2 lg:border-l lg:border-zinc-800 lg:pl-4 lg:ml-4">
-                        <button onClick={() => openModal(tx)} className="p-2 lg:p-0 bg-zinc-800/50 lg:bg-transparent rounded-lg text-zinc-400 hover:text-indigo-400"><Edit2 className="w-4 h-4 lg:w-4 lg:h-4" /></button>
-                        <button onClick={() => handleDelete(tx.id)} className="p-2 lg:p-0 bg-zinc-800/50 lg:bg-transparent rounded-lg text-zinc-400 hover:text-red-400"><Trash2 className="w-4 h-4 lg:w-4 lg:h-4" /></button>
+                      <div className="transition-opacity flex items-center gap-2 md:border-l md:border-zinc-800 md:pl-4 md:ml-4">
+                        <button onClick={() => openModal(tx)} className="p-2 md:p-0 bg-zinc-800/50 md:bg-transparent rounded-lg text-zinc-400 hover:text-indigo-400"><Edit2 className="w-4 h-4 md:w-4 md:h-4" /></button>
+                        <button onClick={() => handleDelete(tx.id)} className="p-2 md:p-0 bg-zinc-800/50 md:bg-transparent rounded-lg text-zinc-400 hover:text-red-400"><Trash2 className="w-4 h-4 md:w-4 md:h-4" /></button>
                       </div>
                     )}
                   </div>
