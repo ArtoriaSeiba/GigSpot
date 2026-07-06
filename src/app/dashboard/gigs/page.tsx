@@ -396,18 +396,18 @@ END:VCALENDAR`;
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={() => handleSyncCalendar(gig)} 
-                            className="p-2 glass text-zinc-400 hover:text-emerald-400 rounded-xl transition-colors border border-transparent hover:border-emerald-500/30 bg-transparent hover:bg-emerald-500/10"
+                            className="text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 p-2 rounded-lg transition-all duration-300"
                             title="Sync to Calendar"
                           >
-                            <CalendarPlus className="w-4 h-4" />
+                            <CalendarPlus className="w-3.5 h-3.5" />
                           </button>
                           {bandRole === "ADMIN" && (
                             <>
-                              <button onClick={() => openModal(gig)} className="p-2 glass text-zinc-400 hover:text-indigo-400 rounded-xl transition-colors border border-transparent hover:border-indigo-500/30 bg-transparent hover:bg-indigo-500/10">
-                                <Edit2 className="w-4 h-4" />
+                              <button onClick={() => openModal(gig)} className="text-zinc-500 hover:text-indigo-400 hover:bg-indigo-500/10 p-2 rounded-lg transition-all duration-300">
+                                <Edit2 className="w-3.5 h-3.5" />
                               </button>
-                              <button onClick={() => handleDeleteGig(gig.id)} className="p-2 glass text-zinc-400 hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30 bg-transparent hover:bg-red-500/10">
-                                <Trash2 className="w-4 h-4" />
+                              <button onClick={() => handleDeleteGig(gig.id)} className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 p-2 rounded-lg transition-all duration-300">
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </>
                           )}
