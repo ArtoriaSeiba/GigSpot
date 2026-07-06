@@ -181,14 +181,12 @@ export default function OverviewDashboard() {
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-3 pl-6">
-                      <span className="text-[11px] font-medium text-zinc-500 flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded-md">
-                        <Music2 className="w-3.5 h-3.5 text-zinc-600" />
+                      <span className="text-xs text-zinc-500 bg-black/20 px-2 py-1 rounded-md font-medium">
                         {task.band.name}
                       </span>
                       {task.assignedName && (
-                        <span className="text-[11px] font-medium text-zinc-500 flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5 text-zinc-600" />
-                          {task.assignedName}
+                        <span className="text-xs text-zinc-500">
+                          Assigned: {task.assignedName}
                         </span>
                       )}
                     </div>
