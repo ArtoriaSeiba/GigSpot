@@ -418,7 +418,7 @@ END:VCALENDAR`;
               </AnimatePresence>
             </div>
           </div>
-        </div>
+        </>
 
         {/* Sidebar Column flattened */}
         <>
@@ -514,7 +514,7 @@ END:VCALENDAR`;
                 </AnimatePresence>
               </div>
             </div>
-          </div>
+          </>
         </div>
       )}
 
