@@ -273,8 +273,8 @@ END:VCALENDAR`;
           <div className="lg:col-span-2 space-y-6">
             {/* Next Gig Highlight */}
             <div className="glass-card rounded-3xl p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-              <CalendarPlus className="w-32 h-32 text-indigo-400" />
+            <div className="absolute top-0 right-0 p-4 md:p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+              <CalendarPlus className="w-20 h-20 md:w-32 md:h-32 text-indigo-400" />
             </div>
             
             <div className="relative z-10">
@@ -319,7 +319,7 @@ END:VCALENDAR`;
                     </div>
                   )}
 
-                  <div className="mt-8 flex flex-wrap items-center gap-3 w-full">
+                  <div className="mt-8 flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full">
                     <Link href={`/dashboard/gigs/${nextGig.id}`} className="px-6 py-2.5 bg-white text-zinc-950 font-bold rounded-xl hover:bg-zinc-200 transition-colors text-sm w-full lg:w-auto text-center flex-1 lg:flex-none justify-center">
                       {bandRole === "ADMIN" ? "Manage Setlist" : "View Setlist"}
                     </Link>

@@ -35,7 +35,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex flex-col xl:flex-row h-screen overflow-hidden bg-zinc-950">
+    <div className="flex flex-col xl:flex-row h-[100dvh] overflow-hidden bg-zinc-950">
       <MobileSidebar user={{ name: session.user?.name }} bandRole={bandRole} />
       {/* Sidebar Navigation */}
       <aside className="w-64 flex-shrink-0 glass border-r border-zinc-800/50 hidden xl:flex flex-col relative z-20">

@@ -180,12 +180,12 @@ export default function OverviewDashboard() {
                         {task.status.replace("_", " ")}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 pl-6">
-                      <span className="text-xs text-zinc-500 bg-black/20 px-2 py-1 rounded-md font-medium">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 pl-6">
+                      <span className="text-[11px] sm:text-xs text-zinc-500 bg-black/20 px-2 py-1 rounded-md font-medium w-fit">
                         {task.band.name}
                       </span>
                       {task.assignedName && (
-                        <span className="text-xs text-zinc-500">
+                        <span className="text-[11px] sm:text-xs text-zinc-500 truncate">
                           Assigned: {task.assignedName}
                         </span>
                       )}
