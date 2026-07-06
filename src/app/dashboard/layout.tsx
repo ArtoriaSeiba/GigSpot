@@ -7,6 +7,7 @@ import { PrismaClient } from "@prisma/client";
 import { LogoutButton } from "@/components/logout-button";
 import { BandSwitcher } from "@/components/band-switcher";
 import { GlobalAlerts } from "@/components/global-alerts";
+import { MobileSidebar } from "@/components/mobile-sidebar";
 import { cookies } from "next/headers";
 
 const prisma = new PrismaClient();
@@ -34,7 +35,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-950">
+    <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-950">
+      <MobileSidebar user={{ name: session.user?.name }} bandRole={bandRole} />
       {/* Sidebar Navigation */}
       <aside className="w-64 flex-shrink-0 glass border-r border-zinc-800/50 hidden md:flex flex-col relative z-20">
         <div className="p-6">

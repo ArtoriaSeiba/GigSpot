@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Guitar, CalendarSync, Sparkles, Music2, Users, DollarSign, CheckCircle2, Star, ShieldCheck } from "lucide-react";
+import { ArrowRight, Guitar, CalendarSync, Sparkles, Music2, Users, DollarSign, CheckCircle2, Star, ShieldCheck, Menu, X } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 
 const fadeIn: Variants = {
@@ -18,6 +19,8 @@ const staggerContainer: Variants = {
 };
 
 export default function Home() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-black overflow-hidden font-sans selection:bg-indigo-500/30">
       {/* --- NAVBAR --- */}
@@ -35,11 +38,35 @@ export default function Home() {
             <Link href="/login" className="text-sm font-semibold text-zinc-300 hover:text-white transition-colors hidden sm:block">
               Sign In
             </Link>
-            <Link href="/register" className="text-sm font-bold bg-white text-black px-5 py-2.5 rounded-full hover:bg-zinc-200 transition-colors">
+            <Link href="/register" className="text-sm font-bold bg-white text-black px-5 py-2.5 rounded-full hover:bg-zinc-200 transition-colors hidden sm:block">
               Get Started
             </Link>
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-zinc-400 hover:text-white">
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden bg-zinc-950 border-b border-white/5 overflow-hidden"
+            >
+              <div className="px-6 py-4 flex flex-col gap-4 text-sm font-medium text-zinc-400">
+                <Link onClick={() => setIsMenuOpen(false)} href="#features" className="hover:text-white py-2">Features</Link>
+                <Link onClick={() => setIsMenuOpen(false)} href="#workflow" className="hover:text-white py-2">How it Works</Link>
+                <Link onClick={() => setIsMenuOpen(false)} href="#testimonials" className="hover:text-white py-2">Testimonials</Link>
+                <div className="h-px bg-white/10 my-2" />
+                <Link onClick={() => setIsMenuOpen(false)} href="/login" className="hover:text-white py-2">Sign In</Link>
+                <Link onClick={() => setIsMenuOpen(false)} href="/register" className="bg-white text-black text-center py-3 rounded-xl font-bold mt-2">Get Started</Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* --- HERO SECTION --- */}
