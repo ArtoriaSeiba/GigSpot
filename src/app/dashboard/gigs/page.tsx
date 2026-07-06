@@ -374,7 +374,7 @@ END:VCALENDAR`;
                           <p className="text-sm text-zinc-400">{gig.venue}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 w-full lg:w-auto mt-2 lg:mt-0">
+                      <div className="flex items-center justify-between lg:justify-end gap-2 flex-wrap opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 w-full lg:w-auto mt-2 lg:mt-0">
                         {(gig.income || 0) > 0 && bandRole === "ADMIN" && (
                           <button 
                             onClick={() => !gig.isPaid && handleReceivePayment(gig)}
@@ -393,7 +393,7 @@ END:VCALENDAR`;
                           <span>Setlist</span>
                         </Link>
                         
-                        <div className="flex items-center gap-1 border-l border-zinc-800/80 pl-2 ml-auto">
+                        <div className="flex items-center gap-1">
                           <button 
                             onClick={() => handleSyncCalendar(gig)} 
                             className="p-2 glass text-zinc-400 hover:text-emerald-400 rounded-xl transition-colors border border-transparent hover:border-emerald-500/30 bg-transparent hover:bg-emerald-500/10"
@@ -444,7 +444,7 @@ END:VCALENDAR`;
                   disabled={isSyncingAll}
                   className="w-full flex items-center justify-between p-3 rounded-xl glass hover:bg-white/10 transition-colors border border-transparent hover:border-zinc-700 disabled:opacity-50"
                 >
-                  <span className="text-sm font-medium text-zinc-300">Sync All to Calendar</span>
+                  <span className="text-sm font-medium text-zinc-300">Sync to Calendar</span>
                   {isSyncingAll ? <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" /> : <CalendarPlus className="w-4 h-4 text-emerald-400" />}
                 </motion.button>
                 <Link href="/dashboard/rehearse/demo" className="w-full flex items-center justify-between p-3 rounded-xl glass hover:bg-white/10 transition-colors border border-transparent hover:border-zinc-700">
@@ -481,7 +481,7 @@ END:VCALENDAR`;
                             <p className="text-xs text-zinc-500">{gig.venue}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 lg:translate-x-2 lg:group-hover:translate-x-0 shrink-0 w-full lg:w-auto mt-2 lg:mt-0">
+                        <div className="flex items-center justify-between lg:justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 lg:translate-x-2 lg:group-hover:translate-x-0 shrink-0 w-full lg:w-auto mt-2 lg:mt-0">
                           {(gig.income || 0) > 0 && bandRole === "ADMIN" && (
                             <button 
                               onClick={() => !gig.isPaid && handleReceivePayment(gig)}
@@ -500,7 +500,7 @@ END:VCALENDAR`;
                             <span>Setlist</span>
                           </Link>
                           {bandRole === "ADMIN" && (
-                            <div className="flex items-center gap-1 border-l border-zinc-800/80 pl-2 ml-auto">
+                            <div className="flex items-center gap-1">
                               <button onClick={() => openModal(gig)} className="text-zinc-500 hover:text-indigo-400 hover:bg-indigo-500/10 p-2 rounded-lg transition-all duration-300">
                                 <Edit2 className="w-3.5 h-3.5" />
                               </button>
