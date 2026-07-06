@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Mail, Loader2, X, ShieldAlert, Trash2, CheckCircle2, Settings, Save } from "lucide-react";
+import { Users, Mail, Loader2, X, ShieldAlert, Trash2, CheckCircle2, Settings, Save, Edit2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -34,7 +34,9 @@ export default function BandManagementPage() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("MUSICIAN");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editRole, setEditRole] = useState("MUSICIAN");
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
 
 
   const fetchMembers = async () => {
@@ -111,7 +113,30 @@ export default function BandManagementPage() {
     }
   };
 
-
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+    setIsEditSubmitting(true);
+    try {
+      const res = await fetch("/api/band/members", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId: editingMember.id, role: editRole }),
+      });
+      if (res.ok) {
+        setEditingMember(null);
+        fetchMembers();
+        toast.success("Member role updated");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to update member");
+      }
+    } catch (e) {
+      toast.error("An error occurred");
+    } finally {
+      setIsEditSubmitting(false);
+    }
+  };
 
   const cancelInvite = async (inviteId: string) => {
     if (!confirm("Cancel this pending invite?")) return;
@@ -204,6 +229,9 @@ export default function BandManagementPage() {
                   </td>
                   {bandRole === "ADMIN" && (
                     <td className="py-4 text-right pr-2">
+                      <button onClick={() => { setEditingMember(member); setEditRole(member.bandRole); }} className="text-zinc-500 hover:text-indigo-400 transition-colors p-2 rounded-lg hover:bg-white/5 mr-1">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
                       <button onClick={() => handleRemove(member.userId)} className="text-zinc-500 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-white/5">
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -238,9 +266,14 @@ export default function BandManagementPage() {
                     {member.bandRole}
                   </span>
                   {bandRole === "ADMIN" && (
-                    <button onClick={() => handleRemove(member.userId)} className="text-zinc-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex gap-1">
+                      <button onClick={() => { setEditingMember(member); setEditRole(member.bandRole); }} className="text-zinc-500 hover:text-indigo-400 p-2 rounded-lg hover:bg-indigo-500/10 transition-colors">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleRemove(member.userId)} className="text-zinc-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -358,6 +391,43 @@ export default function BandManagementPage() {
                 <button type="submit" disabled={isSubmitting} className="flex-1 py-3 rounded-xl font-medium text-sm text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center justify-center gap-2">
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                   Send Invite
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="glass-card rounded-3xl w-full max-w-lg p-6 border border-zinc-700/50 shadow-2xl relative">
+            <button onClick={() => setEditingMember(null)} className="absolute top-4 right-4 text-zinc-400 hover:text-white">
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-2xl font-bold text-white mb-6">Edit Member Role</h2>
+            
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-zinc-300 ml-1">Member Name</label>
+                <input type="text" disabled value={editingMember.user.name || editingMember.user.email || ""} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none opacity-50" />
+              </div>
+              
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-zinc-300 ml-1">Access Level</label>
+                <select value={editRole} onChange={(e) => setEditRole(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none [color-scheme:dark]">
+                  <option value="MUSICIAN">Musician (Read-Only access to gigs/gear)</option>
+                  <option value="ADMIN">Admin (Can schedule gigs & modify gear)</option>
+                </select>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button type="button" onClick={() => setEditingMember(null)} className="flex-1 py-3 rounded-xl font-medium text-sm text-zinc-300 glass hover:bg-white/5 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" disabled={isEditSubmitting} className="flex-1 py-3 rounded-xl font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2">
+                  {isEditSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Save Changes
                 </button>
               </div>
             </form>
