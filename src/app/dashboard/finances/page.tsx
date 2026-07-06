@@ -180,7 +180,7 @@ export default function FinancesPage() {
                   key={tx.id} 
                   className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl bg-black/20 hover:bg-black/40 transition-colors border border-zinc-800 group gap-4 md:gap-0"
                 >
-                  <div className="flex items-start md:items-center gap-4 w-full md:w-auto">
+                  <div className="flex items-start md:items-center gap-4 flex-1 min-w-0">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-1 md:mt-0 ${tx.type === 'INCOME' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                       {tx.type === 'INCOME' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
                     </div>
@@ -189,7 +189,7 @@ export default function FinancesPage() {
                       <p className="text-xs text-zinc-500">{new Date(tx.date).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between md:justify-end w-full md:w-auto pl-14 md:pl-0">
+                  <div className="flex items-center justify-between md:justify-end shrink-0 w-full md:w-auto pl-14 md:pl-0 mt-3 md:mt-0">
                     <p className={`font-bold ${tx.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
                       {tx.type === 'INCOME' ? '+' : '-'}${tx.amount.toFixed(2)}
                     </p>
