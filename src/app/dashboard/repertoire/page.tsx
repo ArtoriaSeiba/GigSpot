@@ -108,17 +108,17 @@ export default function RepertoirePage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
-      <header className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Repertoire</h1>
-          <p className="hidden md:block text-zinc-400 text-sm">Manage your master song list and AR tracking data.</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">Repertoire</h1>
+          <p className="hidden lg:block text-zinc-400 text-sm">Manage your master song list and AR tracking data.</p>
         </div>
         {bandRole === "ADMIN" && (
           <motion.button 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => openModal()}
-            className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+            className="w-full lg:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
           >
             <Plus className="w-5 h-5" />
             Add Song
@@ -141,7 +141,7 @@ export default function RepertoirePage() {
           ) : (
             <>
               {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto">
+              <div className="hidden lg:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
@@ -197,7 +197,7 @@ export default function RepertoirePage() {
             </div>
 
             {/* Mobile Cards */}
-            <div className="md:hidden space-y-4">
+            <div className="lg:hidden space-y-4">
               <AnimatePresence>
                 {songs.map((song) => (
                   <motion.div 

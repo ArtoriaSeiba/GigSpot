@@ -143,15 +143,15 @@ export default function BandManagementPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
-      <header className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Band Team</h1>
-          <p className="hidden md:block text-zinc-400 text-sm">Manage who has access to your band's schedule, gear, and repertoire.</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">Band Team</h1>
+          <p className="hidden lg:block text-zinc-400 text-sm">Manage who has access to your band's schedule, gear, and repertoire.</p>
         </div>
         {bandRole === "ADMIN" && (
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
+            className="w-full lg:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
           >
             <Mail className="w-5 h-5" />
             Invite Member
@@ -171,7 +171,7 @@ export default function BandManagementPage() {
         className="glass-card rounded-3xl p-4 md:p-6"
       >
         {/* Desktop Table */}
-        <div className="hidden md:block overflow-x-auto">
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
@@ -217,7 +217,7 @@ export default function BandManagementPage() {
         </div>
 
         {/* Mobile Cards */}
-        <div className="md:hidden space-y-4">
+        <div className="lg:hidden space-y-4">
           <AnimatePresence>
             {members.map((member, i) => (
               <motion.div 
@@ -257,7 +257,7 @@ export default function BandManagementPage() {
           <h2 className="text-xl md:text-2xl font-bold text-white mb-4">Pending Invites</h2>
           
           {/* Desktop Table */}
-          <div className="hidden md:block overflow-x-auto">
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
@@ -291,7 +291,7 @@ export default function BandManagementPage() {
           </div>
 
           {/* Mobile Cards */}
-          <div className="md:hidden space-y-3">
+          <div className="lg:hidden space-y-3">
             {pendingInvites.map((invite) => (
               <div key={invite.id} className="flex flex-col p-4 rounded-2xl bg-black/20 hover:bg-black/40 transition-colors border border-zinc-800 gap-3">
                 <p className="text-sm font-medium text-zinc-300">{invite.email}</p>

@@ -92,7 +92,7 @@ export default function OverviewDashboard() {
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none -z-10" />
               
               {data.nextGigs?.length > 0 ? (
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 relative z-10">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 relative z-10">
                   <div>
                     <div className="flex items-center gap-3 mb-4">
                       <div className="px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-indigo-300 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
@@ -100,19 +100,19 @@ export default function OverviewDashboard() {
                       </div>
                       <span className="text-zinc-500 text-sm font-medium">{data.nextGigs[0].band.name}</span>
                     </div>
-                    <h2 className="text-3xl md:text-5xl font-black text-white mb-4 md:mb-6 tracking-tight leading-tight">{data.nextGigs[0].title}</h2>
-                    <div className="flex flex-wrap items-center gap-3 md:gap-6 text-zinc-300">
+                    <h2 className="text-3xl lg:text-5xl font-black text-white mb-4 lg:mb-6 tracking-tight leading-tight">{data.nextGigs[0].title}</h2>
+                    <div className="flex flex-wrap items-center gap-3 lg:gap-6 text-zinc-300">
                       <div className="flex items-center gap-2 bg-black/20 px-4 py-2 rounded-xl">
-                        <Calendar className="w-4 h-4 md:w-5 md:h-5 text-indigo-400"/> 
-                        <span className="font-medium text-sm md:text-base">{new Date(data.nextGigs[0].date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        <Calendar className="w-4 h-4 lg:w-5 lg:h-5 text-indigo-400"/> 
+                        <span className="font-medium text-sm lg:text-base">{new Date(data.nextGigs[0].date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                       </div>
                       <div className="flex items-center gap-2 bg-black/20 px-4 py-2 rounded-xl">
-                        <MapPin className="w-4 h-4 md:w-5 md:h-5 text-emerald-400"/> 
-                        <span className="font-medium text-sm md:text-base">{data.nextGigs[0].venue}</span>
+                        <MapPin className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-400"/> 
+                        <span className="font-medium text-sm lg:text-base">{data.nextGigs[0].venue}</span>
                       </div>
                     </div>
                   </div>
-                  <Link href={`/dashboard/gigs/${data.nextGigs[0].id}`} className="shrink-0 w-full md:w-auto justify-center px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/20 flex items-center gap-3 hover:scale-105 active:scale-95">
+                  <Link href={`/dashboard/gigs/${data.nextGigs[0].id}`} className="shrink-0 w-full lg:w-auto justify-center px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/20 flex items-center gap-3 hover:scale-105 active:scale-95">
                     Manage Gig <ArrowRight className="w-5 h-5" />
                   </Link>
                 </div>
