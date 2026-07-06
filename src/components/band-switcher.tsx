@@ -11,6 +11,7 @@ export function BandSwitcher() {
   const [activeBandId, setActiveBandId] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isCreateBandOpen, setIsCreateBandOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -30,7 +31,9 @@ export function BandSwitcher() {
             switchBand(data[0].band.id);
           }
         }
-      });
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -51,6 +54,23 @@ export function BandSwitcher() {
     // Refresh the page to reload context
     window.location.href = "/dashboard";
   };
+
+  if (isLoading) {
+    return (
+      <div className="relative mt-2">
+        <div className="w-full flex items-center justify-between px-3 py-2 bg-white/5 border border-zinc-800/50 rounded-xl">
+          <div className="flex items-center gap-3 w-full">
+            <div className="w-8 h-8 rounded-lg bg-zinc-800/50 animate-pulse shrink-0" />
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="w-2/3 h-3 bg-zinc-800/50 rounded animate-pulse" />
+              <div className="w-1/3 h-2 bg-zinc-800/50 rounded animate-pulse" />
+            </div>
+          </div>
+          <ChevronDown className="w-4 h-4 text-zinc-700 shrink-0" />
+        </div>
+      </div>
+    );
+  }
 
   const activeMembership = memberships.find(m => m.band.id === activeBandId) || memberships[0];
 
