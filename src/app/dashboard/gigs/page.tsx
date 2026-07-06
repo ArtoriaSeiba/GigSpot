@@ -357,7 +357,6 @@ END:VCALENDAR`;
                   const d = new Date(gig.date);
                   return (
                     <motion.div 
-                      layout 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
@@ -464,7 +463,6 @@ END:VCALENDAR`;
                     const d = new Date(gig.date);
                     return (
                       <motion.div 
-                        layout 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}

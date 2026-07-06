@@ -156,7 +156,6 @@ export default function RepertoirePage() {
                   <AnimatePresence>
                     {songs.map((song) => (
                       <motion.tr 
-                        layout
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -10 }}
@@ -201,8 +200,7 @@ export default function RepertoirePage() {
               <AnimatePresence>
                 {songs.map((song) => (
                   <motion.div 
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     key={song.id} 
