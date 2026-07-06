@@ -166,7 +166,7 @@ export default function FinancesPage() {
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card rounded-3xl p-6">
         <h2 className="text-xl font-bold text-white mb-6">Recent Transactions</h2>
-        <div className="space-y-4 max-h-[500px] overflow-y-auto scrollbar-hide">
+        <div className="space-y-4 max-h-[500px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {transactions.length === 0 ? (
             <div className="text-center py-12">
               <DollarSign className="w-12 h-12 text-zinc-600 mx-auto mb-4" />

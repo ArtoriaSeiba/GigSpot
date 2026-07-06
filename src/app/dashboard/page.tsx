@@ -94,11 +94,11 @@ export default function OverviewDashboard() {
               {data.nextGigs?.length > 0 ? (
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 relative z-10">
                   <div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-indigo-300 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" /> Next Upcoming Gig
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 mb-4">
+                      <div className="px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-indigo-300 text-xs font-bold uppercase tracking-widest flex items-center gap-2 whitespace-nowrap w-fit shrink-0">
+                        <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse shrink-0" /> Next Gig
                       </div>
-                      <span className="text-zinc-500 text-sm font-medium">{data.nextGigs[0].band.name}</span>
+                      <span className="text-zinc-500 text-sm font-medium line-clamp-1">{data.nextGigs[0].band.name}</span>
                     </div>
                     <h2 className="text-3xl lg:text-5xl font-black text-white mb-4 lg:mb-6 tracking-tight leading-tight">{data.nextGigs[0].title}</h2>
                     <div className="flex flex-wrap items-center gap-3 lg:gap-6 text-zinc-300">
