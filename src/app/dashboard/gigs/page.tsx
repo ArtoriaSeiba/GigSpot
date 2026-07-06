@@ -300,7 +300,7 @@ END:VCALENDAR`;
                       </div>
                       <p className="text-lg font-medium text-white">
                         {new Date(nextGig.date).toLocaleDateString()}
-                        {nextGig.loadInTime && ` • Load in: ${new Date(nextGig.loadInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                        {nextGig.loadInTime && ` • ${new Date(nextGig.loadInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                       </p>
                     </div>
                   </div>
