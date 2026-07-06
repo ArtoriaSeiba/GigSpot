@@ -137,6 +137,13 @@ export default function RegisterPage() {
         <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-cyan-500/10 via-transparent to-transparent opacity-50 pointer-events-none lg:guitar-curve" />
 
         <div className="w-full max-w-md p-8 sm:p-12 relative z-10">
+          {/* Mobile Logo */}
+          <div className="lg:hidden mb-8 flex justify-center">
+            <Link href="/" className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-lg">
+              GigSpot.
+            </Link>
+          </div>
+
           <div className="text-center lg:text-left mb-10">
             <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
             <p className="text-sm text-zinc-400">Join GigSpot as an independent musician.</p>

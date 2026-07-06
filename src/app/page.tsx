@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Guitar, CalendarSync, Sparkles, Music2, Users, DollarSign, CheckCircle2, Star, ShieldCheck, Menu, X } from "lucide-react";
-import { motion, Variants } from "framer-motion";
+import { motion, Variants, AnimatePresence } from "framer-motion";
 
 const fadeIn: Variants = {
   hidden: { opacity: 0, y: 20 },

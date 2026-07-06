@@ -183,10 +183,10 @@ export default function BandProfilePage() {
         <p className="text-zinc-400 text-sm">Manage your band's identity, images, and public presence.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="space-y-16 mt-8">
+      <form onSubmit={handleSubmit} className="space-y-8 mt-8">
         
         {/* Cover Photo */}
-        <div className="glass-card rounded-[2rem] border border-zinc-800 overflow-visible relative group mb-12">
+        <div className="glass-card rounded-[2rem] border border-zinc-800 overflow-visible relative group mb-8">
           <div className="h-64 md:h-80 w-full bg-zinc-900 relative rounded-[2rem] overflow-hidden">
             {coverPreview ? (
               <img src={coverPreview} alt="Cover" className="w-full h-full object-cover" />
@@ -335,7 +335,7 @@ export default function BandProfilePage() {
       </form>
 
       {role === "ADMIN" && (
-        <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-red-500/20 mt-16 relative overflow-hidden group">
+        <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-red-500/20 mt-8 relative overflow-hidden group">
           <div className="absolute inset-0 bg-red-500/5 group-hover:bg-red-500/10 transition-colors" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
