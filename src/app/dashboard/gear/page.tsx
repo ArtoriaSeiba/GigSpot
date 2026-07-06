@@ -155,7 +155,7 @@ export default function GearInventoryPage() {
                       </div>
                     )}
                     <div className="flex justify-between items-start mb-3 pr-14">
-                      <h3 className="text-lg font-bold text-zinc-100 line-clamp-1">{item.name}</h3>
+                      <h3 className="text-lg font-bold text-zinc-100">{item.name}</h3>
                     </div>
                     <div className="mb-4">
                       <span className="px-2.5 py-1 rounded bg-zinc-900/80 text-xs font-semibold text-zinc-400 border border-zinc-800">

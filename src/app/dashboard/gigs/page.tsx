@@ -374,7 +374,7 @@ END:VCALENDAR`;
                           <p className="text-sm text-zinc-400">{gig.venue}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 w-full lg:w-auto mt-2 lg:mt-0">
+                      <div className="flex items-center gap-2 flex-wrap opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 w-full lg:w-auto mt-2 lg:mt-0">
                         {(gig.income || 0) > 0 && bandRole === "ADMIN" && (
                           <button 
                             onClick={() => !gig.isPaid && handleReceivePayment(gig)}

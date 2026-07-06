@@ -35,10 +35,10 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-950">
+    <div className="flex flex-col lg:flex-row h-screen overflow-hidden bg-zinc-950">
       <MobileSidebar user={{ name: session.user?.name }} bandRole={bandRole} />
       {/* Sidebar Navigation */}
-      <aside className="w-64 flex-shrink-0 glass border-r border-zinc-800/50 hidden md:flex flex-col relative z-20">
+      <aside className="w-64 flex-shrink-0 glass border-r border-zinc-800/50 hidden lg:flex flex-col relative z-20">
         <div className="p-6">
           <Link href="/dashboard" className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
             GigSpot.
