@@ -185,7 +185,7 @@ export default function FinancesPage() {
                       {tx.type === 'INCOME' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-zinc-200 truncate">{tx.description}</p>
+                      <p className="font-medium text-zinc-200 line-clamp-2">{tx.description}</p>
                       <p className="text-xs text-zinc-500">{new Date(tx.date).toLocaleDateString()}</p>
                     </div>
                   </div>
