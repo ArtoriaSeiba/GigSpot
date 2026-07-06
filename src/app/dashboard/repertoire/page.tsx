@@ -177,7 +177,7 @@ export default function RepertoirePage() {
                         </td>
                         <td className="py-4 text-zinc-400">{song.tempo || "-"}</td>
                         <td className="py-4 text-right pr-2">
-                          <div className="flex items-center justify-end gap-3 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center justify-end gap-3 transition-opacity">
                             <Link href={`/dashboard/rehearse/${song.id}`} className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-wider bg-cyan-500/10 px-3 py-1.5 rounded-full border border-cyan-500/20">
                               Launch AR
                             </Link>

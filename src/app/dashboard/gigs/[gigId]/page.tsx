@@ -188,7 +188,7 @@ export default function GigSetlistPage({ params }: { params: Promise<{ gigId: st
                       {ss.song.key && <p className="text-[10px] text-zinc-500 font-mono mt-0.5">{ss.song.key}</p>}
                     </div>
                     {bandRole === "ADMIN" && (
-                      <button onClick={() => handleRemoveSong(ss.id)} className="text-zinc-600 hover:text-red-400 p-2 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-red-500/10">
+                      <button onClick={() => handleRemoveSong(ss.id)} className="text-zinc-600 hover:text-red-400 p-2 transition-all rounded-lg hover:bg-red-500/10">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}

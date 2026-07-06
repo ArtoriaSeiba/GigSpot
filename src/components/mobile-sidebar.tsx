@@ -23,7 +23,7 @@ export function MobileSidebar({ user, bandRole }: MobileSidebarProps) {
 
   return (
     <>
-      <div className="lg:hidden flex items-center justify-between p-4 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/50 sticky top-0 z-40">
+      <div className="xl:hidden flex items-center justify-between p-4 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/50 sticky top-0 z-40">
         <Link href="/dashboard" className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
           GigSpot.
         </Link>
@@ -40,7 +40,7 @@ export function MobileSidebar({ user, bandRole }: MobileSidebarProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeSidebar}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 xl:hidden"
             />
             
             <motion.div 
@@ -48,7 +48,7 @@ export function MobileSidebar({ user, bandRole }: MobileSidebarProps) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              className="fixed top-0 right-0 bottom-0 w-[280px] bg-zinc-950 border-l border-zinc-800/50 z-50 flex flex-col lg:hidden shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 w-[280px] bg-zinc-950 border-l border-zinc-800/50 z-50 flex flex-col xl:hidden shadow-2xl"
             >
               <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
                 <span className="font-bold text-white">Menu</span>

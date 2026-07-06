@@ -212,7 +212,7 @@ export default function TasksPage() {
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-bold text-white flex-1">{task.title}</h3>
                   {bandRole === "ADMIN" && (
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                    <div className="transition-opacity flex gap-2">
                       <button onClick={(e) => { e.stopPropagation(); openModal(task); }} className="text-zinc-500 hover:text-indigo-400"><Edit2 className="w-4 h-4" /></button>
                       <button onClick={(e) => { e.stopPropagation(); handleDelete(task.id); }} className="text-zinc-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
                     </div>
@@ -230,7 +230,7 @@ export default function TasksPage() {
                   {task.dueDate && <p className="text-xs text-indigo-400 flex items-center gap-1"><Calendar className="w-3 h-3" /> Due: {new Date(task.dueDate).toLocaleDateString()}</p>}
                 </div>
                 {(bandRole === "ADMIN" || (task.assignedTo && task.assignedTo.split(',').map((i: string) => i.trim()).includes(userId))) && (
-                  <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex justify-end transition-opacity">
                     <button onClick={() => updateStatus(task.id, "IN_PROGRESS")} className="text-xs font-medium text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
                       Start <ArrowRight className="w-3 h-3" />
                     </button>
@@ -263,7 +263,7 @@ export default function TasksPage() {
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-bold text-white flex-1">{task.title}</h3>
                   {bandRole === "ADMIN" && (
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                    <div className="transition-opacity flex gap-2">
                       <button onClick={(e) => { e.stopPropagation(); openModal(task); }} className="text-cyan-600 hover:text-cyan-400"><Edit2 className="w-4 h-4" /></button>
                       <button onClick={(e) => { e.stopPropagation(); handleDelete(task.id); }} className="text-cyan-600 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
                     </div>
@@ -281,7 +281,7 @@ export default function TasksPage() {
                   {task.dueDate && <p className="text-xs text-cyan-400 flex items-center gap-1"><Calendar className="w-3 h-3" /> Due: {new Date(task.dueDate).toLocaleDateString()}</p>}
                 </div>
                 {(bandRole === "ADMIN" || (task.assignedTo && task.assignedTo.split(',').map((i: string) => i.trim()).includes(userId))) && (
-                  <div className="flex justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex justify-between transition-opacity">
                     <button onClick={() => updateStatus(task.id, "PENDING")} className="text-xs font-medium text-zinc-400 hover:text-zinc-300">
                       Undo
                     </button>
@@ -317,7 +317,7 @@ export default function TasksPage() {
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-bold text-white line-through flex-1">{task.title}</h3>
                   {bandRole === "ADMIN" && (
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                    <div className="transition-opacity flex gap-2">
                       <button onClick={(e) => { e.stopPropagation(); openModal(task); }} className="text-emerald-600 hover:text-emerald-400"><Edit2 className="w-4 h-4" /></button>
                       <button onClick={(e) => { e.stopPropagation(); handleDelete(task.id); }} className="text-emerald-600 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
                     </div>
@@ -334,7 +334,7 @@ export default function TasksPage() {
                   )}
                 </div>
                 {(bandRole === "ADMIN" || (task.assignedTo && task.assignedTo.split(',').includes(userId))) && (
-                  <div className="flex justify-start opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex justify-start transition-opacity">
                     <button onClick={() => updateStatus(task.id, "IN_PROGRESS")} className="text-xs font-medium text-zinc-400 hover:text-zinc-300">
                       Undo
                     </button>

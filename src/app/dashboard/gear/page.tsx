@@ -149,7 +149,7 @@ export default function GearInventoryPage() {
                     className="glass p-5 rounded-2xl border border-zinc-800/50 hover:border-amber-500/30 transition-colors group relative"
                   >
                     {bandRole === "ADMIN" && (
-                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute top-2 right-2 flex gap-1 transition-opacity">
                         <button onClick={() => openModal(item)} className="p-1.5 rounded-lg bg-zinc-900/80 text-zinc-400 hover:text-indigo-400"><Edit2 className="w-4 h-4" /></button>
                         <button onClick={() => handleDelete(item.id)} className="p-1.5 rounded-lg bg-zinc-900/80 text-zinc-400 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
                       </div>

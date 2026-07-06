@@ -194,7 +194,7 @@ export default function FinancesPage() {
                       {tx.type === 'INCOME' ? '+' : '-'}${tx.amount.toFixed(2)}
                     </p>
                     {bandRole === "ADMIN" && (
-                      <div className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center gap-2 lg:border-l lg:border-zinc-800 lg:pl-4 lg:ml-4">
+                      <div className="transition-opacity flex items-center gap-2 lg:border-l lg:border-zinc-800 lg:pl-4 lg:ml-4">
                         <button onClick={() => openModal(tx)} className="p-2 lg:p-0 bg-zinc-800/50 lg:bg-transparent rounded-lg text-zinc-400 hover:text-indigo-400"><Edit2 className="w-4 h-4 lg:w-4 lg:h-4" /></button>
                         <button onClick={() => handleDelete(tx.id)} className="p-2 lg:p-0 bg-zinc-800/50 lg:bg-transparent rounded-lg text-zinc-400 hover:text-red-400"><Trash2 className="w-4 h-4 lg:w-4 lg:h-4" /></button>
                       </div>
