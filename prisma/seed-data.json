@@ -1,0 +1,398 @@
+{
+  "users": [
+    {
+      "id": "cmr0pmduz0000eri9gicz0f7l",
+      "name": "Irfan Niesa",
+      "email": "irfanniesa7@gmail.com",
+      "emailVerified": "2026-07-02T20:39:22.097Z",
+      "image": null,
+      "coverImage": null,
+      "password": "$2b$10$istS9Y/LdjvIs2le6wOa2e/ZQOk/vD7YVbCdBlZWdbAOkYopsJWxO",
+      "role": "MUSICIAN",
+      "availability": "",
+      "phone": "",
+      "bio": ""
+    },
+    {
+      "id": "cmr0s15to0000c19m76gc40dd",
+      "name": "Irfan Raziq",
+      "email": "irfanraziq7@gmail.com",
+      "emailVerified": "2026-07-02T20:39:22.097Z",
+      "image": null,
+      "coverImage": null,
+      "password": "$2b$10$opDAyW7B5RKAaX7bzUkKSuRdgoYiHqKaZ7jXXgDuUZYbE8ZbE2e.6",
+      "role": "MUSICIAN",
+      "availability": null,
+      "phone": null,
+      "bio": null
+    },
+    {
+      "id": "cmr12dhgz000ivfysenolcefd",
+      "name": "Paan",
+      "email": "paan7@gmail.com",
+      "emailVerified": "2026-07-02T20:39:22.097Z",
+      "image": null,
+      "coverImage": null,
+      "password": "$2b$10$X3pxIP/Mi3.rVTQjgRGdHeM26WpG5Siril5OoKuzNNUTHvxR6DyHW",
+      "role": "MUSICIAN",
+      "availability": null,
+      "phone": null,
+      "bio": null
+    },
+    {
+      "id": "cmr12g1ep000nvfysuwiq4qjy",
+      "name": "Acap",
+      "email": "acap7@gmail.com",
+      "emailVerified": "2026-07-02T20:39:22.097Z",
+      "image": null,
+      "coverImage": null,
+      "password": "$2b$10$wB0p0CQXNWvgOMAXEZIqwOc8vhqYZIeuRHFTj90EgUSr4N9SmVG8a",
+      "role": "MUSICIAN",
+      "availability": null,
+      "phone": null,
+      "bio": null
+    },
+    {
+      "id": "cmr3zpcov0002lkvcszfe86pb",
+      "name": "Artoria Pendragon",
+      "email": "artoria044@gmail.com",
+      "emailVerified": null,
+      "image": "https://lh3.googleusercontent.com/a/ACg8ocLyxwFVzTpD2jdNc8fIcfHcoj0b9dTyTsz_Gl2Fu0AmGbfbuA=s96-c",
+      "coverImage": null,
+      "password": null,
+      "role": "MUSICIAN",
+      "availability": null,
+      "phone": null,
+      "bio": null
+    },
+    {
+      "id": "cmr9arcmh0000zljv3ln8imty",
+      "name": "User 1",
+      "email": "2025110281@student.uitm.edu.my",
+      "emailVerified": null,
+      "image": null,
+      "coverImage": null,
+      "password": "$2b$10$f/S.rY0EfsiYJeLuk1W2kORlRAoP5kW.H/aqBDpwTIsK4McASaoiW",
+      "role": "MUSICIAN",
+      "availability": null,
+      "phone": null,
+      "bio": null
+    }
+  ],
+  "accounts": [
+    {
+      "id": "cmr3z6ppp0001lkvcmy1y3nn4",
+      "userId": "cmr0pmduz0000eri9gicz0f7l",
+      "type": "oauth",
+      "provider": "google",
+      "providerAccountId": "100354743016291899750",
+      "refresh_token": "1//0gQ5i2NqDSpBLCgYIARAAGBASNwF-L9IrfGGvPUKI4PLs7sK-G8aE0ZQf9koAEeqHSHefAnbwjQS5YaEssVN6VZE5372VSJLIfzU",
+      "access_token": "ya29.a0AT3oNZ_dc5Na-N0r1a81D3TIutiICeqnosnBJoytAueFj8o3FFrTXPp22K4pNlew6R4LaJgesdHECh7oZwc0bIHloDOa4YwXsRgmUr3HUzfQq_mdsU9zm40fkv6u81YRrvkFWS_jc_EzCqtRfwgfYw0Vvi8Y7-F0IWSD74bfHWPzGWCAXVsDBdEU-yUrfwQeJMOy_zIaCgYKASgSARcSFQHGX2Mi2p8Z605oQ2wcvHHNmJo0_Q0206",
+      "expires_at": 1783352058,
+      "token_type": "Bearer",
+      "scope": "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/calendar.events openid",
+      "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImYzNjE5MTM3MWM4YzRmZmQxNjI4NDZjZGU5MWE5Y2I0YzJiZWJhZTIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI2NzMzMjc1MzIzMzQtOHFnaTBtcm80amQ2cmVpZWp1aDhrc202M3BhbjJoNXUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI2NzMzMjc1MzIzMzQtOHFnaTBtcm80amQ2cmVpZWp1aDhrc202M3BhbjJoNXUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDAzNTQ3NDMwMTYyOTE4OTk3NTAiLCJlbWFpbCI6ImlyZmFubmllc2E3QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoiYTNmeXVtMVZ1dlFqRm45d1RiNDJSZyIsIm5hbWUiOiJJcmZhbiIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NMclNZMVozb2dqVVBIdHBUQzFST3RpQnVnaUhYSERHemtPdnBzaDJwdkZFNmFYWHVnPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IklyZmFuIiwiaWF0IjoxNzgzMDI1MjMxLCJleHAiOjE3ODMwMjg4MzF9.DQAtzDfRjXnaxtn1xSKTbxrQiJvCgLcPWhnkmBNw2Hpd3YhV2JE2-_k6H_2cETnrNJUS5XgJ6ISpSvPBc8hnIVuAvyXgDj5E_sSLnDDLMfYT8bbsxnUyVKzW6ERGXchJHMcj_xwPWkGP3CDQDtUbuR7BHjk50Ss-G046mTl9wrCtNvi_GUFOZfOEFuRJTeqR-YcB7dfsK4uevepArfp_rTBk8r_GuIMTkHT6Kxunqf2NfqQEs8FFbf5aM9u2lFfRiwHf4MbRYrrOpgxrHvx3kU-2aZboUDRMh2UVHxGrLKs32yrFmWZG1J4BGumRwfV2OsNNHjw-K_tWNRxGVCocMQ",
+      "session_state": null,
+      "refresh_token_expires_in": 604799
+    },
+    {
+      "id": "cmr3zpcp40004lkvczak3xyi2",
+      "userId": "cmr3zpcov0002lkvcszfe86pb",
+      "type": "oauth",
+      "provider": "google",
+      "providerAccountId": "115876501014516924500",
+      "refresh_token": "1//0g7KrqUCqUCZICgYIARAAGBASNwF-L9IrekjFM5KXU9urTJluqrYuLhpHNG_tdk_Y-WKMR-NaldFdbyZLQ0E0p-TAICHmkV3Ftmo",
+      "access_token": "ya29.a0AT3oNZ8t2XC1vxH62_ufhsfAid1QBaxgWXf84snKgsbHuVFE-7_yO6l-OuQLiY-3EF7ZG9wOlXB4dc2HyKzdG_3MouCU5OZak2NCjsrGRNChU-seXUA44GXY0YRFX1-VHNQyJd_qI_6WQBASAo20EVG8JbSOUqIiQAWT0LuXF7Y5_6Vj6s0bqqivHMaynt22xdpLGhMaCgYKATQSARUSFQHGX2MibWIzcgOCxwHaXRX14lT43w0206",
+      "expires_at": 1783029698,
+      "token_type": "Bearer",
+      "scope": "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid https://www.googleapis.com/auth/calendar.events",
+      "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImYzNjE5MTM3MWM4YzRmZmQxNjI4NDZjZGU5MWE5Y2I0YzJiZWJhZTIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI2NzMzMjc1MzIzMzQtOHFnaTBtcm80amQ2cmVpZWp1aDhrc202M3BhbjJoNXUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI2NzMzMjc1MzIzMzQtOHFnaTBtcm80amQ2cmVpZWp1aDhrc202M3BhbjJoNXUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTU4NzY1MDEwMTQ1MTY5MjQ1MDAiLCJlbWFpbCI6ImFydG9yaWEwNDRAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiI3NVpHdHJfZFp2ODBOcEp5Ul9FbWJBIiwibmFtZSI6IkFydG9yaWEgUGVuZHJhZ29uIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0x5eHdGVnpUcEQyamROYzhmSWNmSGNvajBiOWRUeVRzel9HbDJGdTBBbUdiZmJ1QT1zOTYtYyIsImdpdmVuX25hbWUiOiJBcnRvcmlhIiwiZmFtaWx5X25hbWUiOiJQZW5kcmFnb24iLCJpYXQiOjE3ODMwMjYxMDEsImV4cCI6MTc4MzAyOTcwMX0.W7mpi2oMDURvTdGtJlDgEZhVlc4Fdm6SrlWwsQjENBnNUzBPz21-hWVG1KKf04sx4IeCYFiC7KflGnhUllNF0OREAYBDb3e8qYhrurkYFWJauSQOD7Y_gXTAndHwjifmXLlrids-qdhRPx7YHTqr1CVw-eMdEPGlOJTfep729Be4fMH5tcULtCUqMUSEYvnh2yGpqb-U6RcYVbVLi3N4AK_8W0NrHY5uAel3oxjrlHGvefxuKN-GVmwJV_Rq6FUaCjBt_p_B0G5EYHIr_SrlMibI6O35ldoUnrYM3peU9QET-ptLWepJkAzyhJJ5_QgYCmXEW4DDLcnBRBTcK4gEIg",
+      "session_state": null,
+      "refresh_token_expires_in": 604798
+    }
+  ],
+  "bands": [
+    {
+      "id": "cmr0q1kw500001354q7liglwq",
+      "name": "KJA Band",
+      "description": "Default workspace",
+      "logoUrl": "/uploads/band_cmr0q1kw500001354q7liglwq_logo_1782847852287.png",
+      "coverUrl": null,
+      "location": "Penang",
+      "genres": "Pop Rock",
+      "instagram": "",
+      "spotify": "",
+      "youtube": "",
+      "website": "",
+      "inviteToken": null,
+      "createdAt": "2026-06-30T14:07:56.933Z",
+      "updatedAt": "2026-06-30T19:30:52.292Z"
+    },
+    {
+      "id": "cmr12g9tu000ovfys97hbxi48",
+      "name": "Solo",
+      "description": null,
+      "logoUrl": null,
+      "coverUrl": null,
+      "location": null,
+      "genres": null,
+      "instagram": null,
+      "spotify": null,
+      "youtube": null,
+      "website": null,
+      "inviteToken": null,
+      "createdAt": "2026-06-30T19:55:17.827Z",
+      "updatedAt": "2026-06-30T19:55:17.827Z"
+    },
+    {
+      "id": "cmr3wqqsv001be2y47lyg6cyp",
+      "name": "Packet Loss",
+      "description": "Your one and only band in UiTM Arau",
+      "logoUrl": "/uploads/band_cmr3wqqsv001be2y47lyg6cyp_logo_1783021243104.jpg",
+      "coverUrl": "/uploads/band_cmr3wqqsv001be2y47lyg6cyp_cover_1783021243106.jpg",
+      "location": "Perlis and Penang",
+      "genres": "Prog Rock / Pop Rock",
+      "instagram": "",
+      "spotify": "",
+      "youtube": "",
+      "website": "",
+      "inviteToken": null,
+      "createdAt": "2026-07-02T19:38:47.216Z",
+      "updatedAt": "2026-07-02T19:58:54.580Z"
+    },
+    {
+      "id": "cmr3zpj7y0005lkvcbakcq1fo",
+      "name": "Solo",
+      "description": null,
+      "logoUrl": null,
+      "coverUrl": null,
+      "location": null,
+      "genres": null,
+      "instagram": null,
+      "spotify": null,
+      "youtube": null,
+      "website": null,
+      "inviteToken": null,
+      "createdAt": "2026-07-02T21:01:49.582Z",
+      "updatedAt": "2026-07-02T21:01:49.582Z"
+    }
+  ],
+  "bandMembers": [
+    {
+      "id": "cmr0q1kwr000213548n22ty8d",
+      "userId": "cmr0pmduz0000eri9gicz0f7l",
+      "bandId": "cmr0q1kw500001354q7liglwq",
+      "bandRole": "ADMIN",
+      "instrument": null
+    },
+    {
+      "id": "cmr0zkvzr000hljot54ouqgrq",
+      "userId": "cmr0s15to0000c19m76gc40dd",
+      "bandId": "cmr0q1kw500001354q7liglwq",
+      "bandRole": "ADMIN",
+      "instrument": null
+    },
+    {
+      "id": "cmr12g9tu000qvfysqqpidsvv",
+      "userId": "cmr12g1ep000nvfysuwiq4qjy",
+      "bandId": "cmr12g9tu000ovfys97hbxi48",
+      "bandRole": "ADMIN",
+      "instrument": null
+    },
+    {
+      "id": "cmr12i57z000wvfysmaq4q820",
+      "userId": "cmr12g1ep000nvfysuwiq4qjy",
+      "bandId": "cmr0q1kw500001354q7liglwq",
+      "bandRole": "MUSICIAN",
+      "instrument": null
+    },
+    {
+      "id": "cmr261li8001wvfystskwx4us",
+      "userId": "cmr12dhgz000ivfysenolcefd",
+      "bandId": "cmr0q1kw500001354q7liglwq",
+      "bandRole": "MUSICIAN",
+      "instrument": null
+    },
+    {
+      "id": "cmr3wqqsw001de2y4boow6a3z",
+      "userId": "cmr0pmduz0000eri9gicz0f7l",
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "bandRole": "ADMIN",
+      "instrument": null
+    },
+    {
+      "id": "cmr3wrnmy001ne2y418xp09jg",
+      "userId": "cmr12dhgz000ivfysenolcefd",
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "bandRole": "MUSICIAN",
+      "instrument": null
+    },
+    {
+      "id": "cmr3wrv5m001pe2y4nbcfp30r",
+      "userId": "cmr12g1ep000nvfysuwiq4qjy",
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "bandRole": "MUSICIAN",
+      "instrument": null
+    },
+    {
+      "id": "cmr3ws2kg001re2y4ilnzs0en",
+      "userId": "cmr0s15to0000c19m76gc40dd",
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "bandRole": "ADMIN",
+      "instrument": null
+    },
+    {
+      "id": "cmr3zpj7y0007lkvc1scmmnha",
+      "userId": "cmr3zpcov0002lkvcszfe86pb",
+      "bandId": "cmr3zpj7y0005lkvcbakcq1fo",
+      "bandRole": "ADMIN",
+      "instrument": null
+    }
+  ],
+  "gigs": [
+    {
+      "id": "cmr0zhs890005ljot0y1d5113",
+      "title": "Run4Cover Rewind",
+      "date": "2026-07-25T00:00:00.000Z",
+      "loadInTime": "2026-07-25T10:00:00.000Z",
+      "venue": "M Social Hotel",
+      "notes": "Amps & Drums Provided",
+      "income": null,
+      "bandId": "cmr0q1kw500001354q7liglwq",
+      "createdAt": "2026-06-30T18:32:29.481Z",
+      "updatedAt": "2026-07-02T18:42:12.647Z"
+    },
+    {
+      "id": "cmr11rgky0007vfys2zpuae7w",
+      "title": "MCR Cover Tribute",
+      "date": "2026-10-30T00:00:00.000Z",
+      "loadInTime": "2026-10-30T09:00:00.000Z",
+      "venue": "Ruas",
+      "notes": "",
+      "income": 100,
+      "bandId": "cmr0q1kw500001354q7liglwq",
+      "createdAt": "2026-06-30T19:36:00.178Z",
+      "updatedAt": "2026-07-02T18:41:56.558Z"
+    },
+    {
+      "id": "cmr3uiktp000ge2y4gbrkiihp",
+      "title": "Run4cover Maroon 5",
+      "date": "2026-03-10T00:00:00.000Z",
+      "loadInTime": null,
+      "venue": "Ruas",
+      "notes": "",
+      "income": null,
+      "bandId": "cmr0q1kw500001354q7liglwq",
+      "createdAt": "2026-07-02T18:36:26.990Z",
+      "updatedAt": "2026-07-02T18:36:26.990Z"
+    },
+    {
+      "id": "cmr3ujhlk000ie2y4h2p42g5d",
+      "title": "Debrick Cafe Busking",
+      "date": "2025-11-12T00:00:00.000Z",
+      "loadInTime": null,
+      "venue": "Debrick Cafe",
+      "notes": "",
+      "income": 50,
+      "bandId": "cmr0q1kw500001354q7liglwq",
+      "createdAt": "2026-07-02T18:37:09.464Z",
+      "updatedAt": "2026-07-02T18:38:49.119Z"
+    },
+    {
+      "id": "cmr3wunqe001te2y4rgdpwo35",
+      "title": "ANGKASA Dinner",
+      "date": "2026-05-23T00:00:00.000Z",
+      "loadInTime": "2026-05-23T10:00:00.000Z",
+      "venue": "JPS Pasar Terapung",
+      "notes": "Own Setup",
+      "income": 500,
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "createdAt": "2026-07-02T19:41:49.862Z",
+      "updatedAt": "2026-07-02T19:41:49.862Z"
+    },
+    {
+      "id": "cmr3wvy6s001xe2y4q9ewk6db",
+      "title": "Triumph Motor Busking",
+      "date": "2026-07-18T00:00:00.000Z",
+      "loadInTime": "2026-07-18T09:00:00.000Z",
+      "venue": "Georgetown",
+      "notes": "Own Setup\nPA System Provided",
+      "income": 600,
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "createdAt": "2026-07-02T19:42:50.068Z",
+      "updatedAt": "2026-07-02T19:42:50.068Z"
+    },
+    {
+      "id": "cmr3wwwrh001ze2y4q85d0ejq",
+      "title": "ABS Dinner",
+      "date": "2026-06-07T00:00:00.000Z",
+      "loadInTime": "2026-06-07T10:00:00.000Z",
+      "venue": "Putra Regency Hotel",
+      "notes": "Own Setup\nPA System Provided",
+      "income": 100,
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "createdAt": "2026-07-02T19:43:34.876Z",
+      "updatedAt": "2026-07-02T19:43:34.876Z"
+    },
+    {
+      "id": "cmr3wxr580021e2y4fjxo7gwm",
+      "title": "ACA Dinner",
+      "date": "2026-06-14T00:00:00.000Z",
+      "loadInTime": "2026-06-14T09:00:00.000Z",
+      "venue": "Rumah Kenughi",
+      "notes": "Own Setup\nPA System Provided",
+      "income": 100,
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "createdAt": "2026-07-02T19:44:14.250Z",
+      "updatedAt": "2026-07-02T19:44:14.250Z"
+    },
+    {
+      "id": "cmr3wyrhv0023e2y4zj5qu4u0",
+      "title": "Sefrekensi Busking",
+      "date": "2026-08-06T00:00:00.000Z",
+      "loadInTime": "2026-08-06T11:00:00.000Z",
+      "venue": "Anjung Siswa",
+      "notes": "Own Full Setup",
+      "income": null,
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "createdAt": "2026-07-02T19:45:01.363Z",
+      "updatedAt": "2026-07-02T19:45:01.363Z"
+    },
+    {
+      "id": "cmr3x6ccp0025e2y4g4haqdbi",
+      "title": "Musica Live Concert",
+      "date": "2026-06-03T00:00:00.000Z",
+      "loadInTime": "2026-06-03T06:00:00.000Z",
+      "venue": "Dewan Sri Semarak",
+      "notes": "Own Instrument",
+      "income": 100,
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "createdAt": "2026-07-02T19:50:54.984Z",
+      "updatedAt": "2026-07-02T19:50:54.984Z"
+    },
+    {
+      "id": "cmr42mpno000dy1cagzn7ta17",
+      "title": "Kesinai Busking ",
+      "date": "2026-09-18T00:00:00.000Z",
+      "loadInTime": "2026-09-18T09:00:00.000Z",
+      "venue": "Kesinai",
+      "notes": "Own Setup",
+      "income": 200,
+      "bandId": "cmr3wqqsv001be2y47lyg6cyp",
+      "createdAt": "2026-07-02T22:23:36.804Z",
+      "updatedAt": "2026-07-02T22:23:45.082Z"
+    },
+    {
+      "id": "cmr9agy0b0001w7w9kce7ftph",
+      "title": "Birthday Party",
+      "date": "2026-08-15T00:00:00.000Z",
+      "loadInTime": null,
+      "venue": "Penang",
+      "notes": "",
+      "income": 100,
+      "bandId": "cmr12g9tu000ovfys97hbxi48",
+      "createdAt": "2026-07-06T14:01:55.495Z",
+      "updatedAt": "2026-07-06T14:01:55.495Z"
+    }
+  ]
+}

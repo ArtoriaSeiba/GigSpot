@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #05050a;
+  --color-foreground: #ededed;
+}
+
+@utility glass {
+  background: rgba(20, 20, 25, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+@utility glass-card {
+  background: linear-gradient(145deg, rgba(30, 30, 40, 0.6) 0%, rgba(20, 20, 30, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+@utility guitar-curve {
+  border-top-left-radius: 8rem;
+  border-bottom-left-radius: 16rem;
+  border-top-right-radius: 2rem;
+  border-bottom-right-radius: 2rem;
+}
+
+@utility guitar-input {
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 2rem;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-100px) rotate(45deg); opacity: 0; }
+}
+
+@layer base {
+  body {
+    @apply bg-zinc-950 text-white selection:bg-indigo-500/30;
+  }
+}
+
+/* Force hide native browser password reveal icon (Edge/Chromium) */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
+.particle {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: float 8s infinite linear;
+}
+
+@utility glass-input {
+  background: rgba(10, 10, 15, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  background-image:
+    radial-gradient(circle at 15% 50%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(129, 140, 248, 0.12) 0%, transparent 50%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+
+  /* Firefox */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

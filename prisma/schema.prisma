@@ -1,0 +1,262 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MUSICIAN
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String?      @unique
+  emailVerified DateTime?
+  image         String?      @db.LongText
+  coverImage    String?      @db.LongText
+  password      String?
+  role          Role         @default(MUSICIAN)
+  availability  String?      @db.Text
+  phone         String?
+  bio           String?      @db.Text
+  
+  accounts      Account[]
+  sessions      Session[]
+  bandMembers   BandMember[]
+  notifications Notification[]
+  gigSyncs      GigSync[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+  refresh_token_expires_in Int?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Band {
+  id          String       @id @default(cuid())
+  name        String
+  description String?      @db.Text
+  logoUrl     String?      @db.Text
+  coverUrl    String?      @db.Text
+  location    String?
+  genres      String?
+  instagram   String?
+  spotify     String?
+  youtube     String?
+  website     String?
+  inviteToken String?      @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  members     BandMember[]
+  gigs        Gig[]
+  repertoire  Song[]
+  gear        Gear[]
+  invites     BandInvite[]
+  finances    FinanceTransaction[]
+  tasks       Task[]
+}
+
+model BandMember {
+  id         String @id @default(cuid())
+  userId     String
+  bandId     String
+  bandRole   Role   @default(MUSICIAN)
+  instrument String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  band Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bandId])
+  @@index([userId])
+  @@index([bandId])
+}
+
+model Gig {
+  id          String    @id @default(cuid())
+  title       String
+  date        DateTime
+  loadInTime  DateTime?
+  venue       String
+  notes       String?   @db.Text
+  income      Float?
+  bandId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  band        Band      @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  setlists    Setlist[]
+  gigSyncs    GigSync[]
+
+  @@index([bandId])
+  @@index([date])
+}
+
+model Setlist {
+  id          String        @id @default(cuid())
+  name        String
+  description String?       @db.Text
+  gigId       String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  gig         Gig           @relation(fields: [gigId], references: [id], onDelete: Cascade)
+  songs       SetlistSong[]
+
+  @@index([gigId])
+}
+
+model Song {
+  id            String        @id @default(cuid())
+  title         String
+  artist        String?
+  key           String?
+  tempo         Int?
+  arSpatialData String?       @db.Text
+  bandId        String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  band          Band          @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  setlists      SetlistSong[]
+
+  @@index([bandId])
+}
+
+model SetlistSong {
+  id        String   @id @default(cuid())
+  setlistId String
+  songId    String
+  order     Int
+  
+  setlist   Setlist  @relation(fields: [setlistId], references: [id], onDelete: Cascade)
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@unique([setlistId, songId])
+  @@index([setlistId])
+  @@index([songId])
+}
+
+model Gear {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  condition   String?
+  assignedTo  String?
+  bandId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  band        Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+
+  @@index([bandId])
+}
+
+model BandInvite {
+  id        String   @id @default(cuid())
+  email     String
+  bandId    String
+  role      Role     @default(MUSICIAN)
+  createdAt DateTime @default(now())
+
+  band      Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+
+  @@unique([email, bandId])
+  @@index([bandId])
+}
+
+model FinanceTransaction {
+  id          String   @id @default(cuid())
+  type        String   // "INCOME" or "EXPENSE"
+  amount      Float
+  description String
+  date        DateTime @default(now())
+  bandId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  band        Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+
+  @@index([bandId])
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  status      String   @default("PENDING") // "PENDING", "IN_PROGRESS", "COMPLETED"
+  assignedTo  String?
+  dueDate     DateTime?
+  bandId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  band        Band     @relation(fields: [bandId], references: [id], onDelete: Cascade)
+
+  @@index([bandId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model GigSync {
+  id             String   @id @default(cuid())
+  userId         String
+  gigId          String
+  googleEventId  String
+  createdAt      DateTime @default(now())
+
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gig            Gig  @relation(fields: [gigId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gigId])
+  @@index([userId])
+  @@index([gigId])
+}
