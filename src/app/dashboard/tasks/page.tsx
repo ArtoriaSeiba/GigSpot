@@ -173,8 +173,8 @@ export default function TasksPage() {
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
       <header className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Task Board</h1>
-          <p className="text-zinc-400 text-sm max-w-xl">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Task Board</h1>
+          <p className="hidden md:block text-zinc-400 text-sm max-w-xl">
             Delegate responsibilities and track progress. You can use this board for <strong>anything</strong>: next practice prep, gig logistics, gear maintenance, or social media tasks.
           </p>
         </div>

@@ -143,15 +143,15 @@ export default function BandManagementPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Band Team</h1>
-          <p className="text-zinc-400 text-sm">Manage who has access to your band's schedule, gear, and repertoire.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Band Team</h1>
+          <p className="hidden md:block text-zinc-400 text-sm">Manage who has access to your band's schedule, gear, and repertoire.</p>
         </div>
         {bandRole === "ADMIN" && (
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
+            className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
           >
             <Mail className="w-5 h-5" />
             Invite Member
@@ -168,9 +168,10 @@ export default function BandManagementPage() {
 
       <motion.div 
         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-        className="glass-card rounded-3xl p-6"
+        className="glass-card rounded-3xl p-4 md:p-6"
       >
-        <div className="overflow-x-auto">
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
@@ -214,15 +215,49 @@ export default function BandManagementPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden space-y-4">
+          <AnimatePresence>
+            {members.map((member, i) => (
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 * i }}
+                key={member.id} 
+                className="flex flex-col p-4 rounded-2xl bg-black/20 hover:bg-black/40 transition-colors border border-zinc-800 gap-3"
+              >
+                <div>
+                  <h4 className="font-bold text-zinc-200 text-lg leading-tight">{member.user.name || "Unknown Musician"}</h4>
+                  <p className="text-sm text-zinc-400 mt-0.5">{member.user.email}</p>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/50 mt-1">
+                  <span className={`px-2.5 py-1 rounded text-xs font-bold tracking-wider ${
+                    member.bandRole === "ADMIN" 
+                      ? "bg-red-500/10 text-red-400 border border-red-500/20" 
+                      : "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                  }`}>
+                    {member.bandRole}
+                  </span>
+                  {bandRole === "ADMIN" && (
+                    <button onClick={() => handleRemove(member.userId)} className="text-zinc-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       </motion.div>
 
       {bandRole === "ADMIN" && pendingInvites.length > 0 && (
         <motion.div 
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className="glass-card rounded-3xl p-6"
+          className="glass-card rounded-3xl p-4 md:p-6"
         >
-          <h2 className="text-xl font-bold text-white mb-4">Pending Invites</h2>
-          <div className="overflow-x-auto">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-4">Pending Invites</h2>
+          
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
@@ -253,6 +288,27 @@ export default function BandManagementPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {pendingInvites.map((invite) => (
+              <div key={invite.id} className="flex flex-col p-4 rounded-2xl bg-black/20 hover:bg-black/40 transition-colors border border-zinc-800 gap-3">
+                <p className="text-sm font-medium text-zinc-300">{invite.email}</p>
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/50 mt-1">
+                  <span className={`px-2.5 py-1 rounded text-xs font-bold tracking-wider ${
+                    invite.role === "ADMIN" 
+                      ? "bg-red-500/10 text-red-400 border border-red-500/20" 
+                      : "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                  }`}>
+                    {invite.role}
+                  </span>
+                  <button onClick={() => cancelInvite(invite.id)} className="text-zinc-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
       )}
