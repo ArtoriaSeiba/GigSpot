@@ -374,7 +374,7 @@ END:VCALENDAR`;
                           <p className="text-sm text-zinc-400">{gig.venue}</p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-start gap-2 flex-wrap transition-all duration-300 w-full lg:w-auto mt-2 lg:mt-0">
+                      <div className="flex items-center justify-end gap-2 flex-wrap transition-all duration-300 ml-auto mt-2 lg:mt-0">
                         {(gig.income || 0) > 0 && bandRole === "ADMIN" && (
                           <button 
                             onClick={() => !gig.isPaid && handleReceivePayment(gig)}
@@ -481,7 +481,7 @@ END:VCALENDAR`;
                             <p className="text-xs text-zinc-500">{gig.venue}</p>
                           </div>
                         </div>
-                        <div className="flex items-center justify-start gap-2 transition-all duration-300 lg:translate-x-2 lg:group-hover:translate-x-0 shrink-0 w-full lg:w-auto mt-2 lg:mt-0">
+                        <div className="flex items-center justify-end gap-2 flex-wrap transition-all duration-300 lg:translate-x-2 lg:group-hover:translate-x-0 shrink-0 ml-auto mt-2 lg:mt-0">
                           {(gig.income || 0) > 0 && bandRole === "ADMIN" && (
                             <button 
                               onClick={() => !gig.isPaid && handleReceivePayment(gig)}
