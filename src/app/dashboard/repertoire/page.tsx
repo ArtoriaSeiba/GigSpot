@@ -127,7 +127,59 @@ export default function RepertoirePage() {
       </header>
 
       {isLoading ? (
-        <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>
+        <div className="glass-card rounded-3xl p-6 mt-8 animate-pulse">
+          {/* Desktop Table Skeleton */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-zinc-800/50">
+                  <th className="pb-4 pl-2"><div className="h-4 w-20 bg-zinc-800/50 rounded"></div></th>
+                  <th className="pb-4"><div className="h-4 w-16 bg-zinc-800/50 rounded"></div></th>
+                  <th className="pb-4"><div className="h-4 w-12 bg-zinc-800/50 rounded"></div></th>
+                  <th className="pb-4"><div className="h-4 w-24 bg-zinc-800/50 rounded"></div></th>
+                  <th className="pb-4 pr-2"><div className="h-4 w-16 bg-zinc-800/50 rounded ml-auto"></div></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/30">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <tr key={i}>
+                    <td className="py-4 pl-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-zinc-800/50 shrink-0"></div>
+                        <div className="h-4 w-32 bg-zinc-800/30 rounded"></div>
+                      </div>
+                    </td>
+                    <td className="py-4"><div className="h-4 w-24 bg-zinc-800/30 rounded"></div></td>
+                    <td className="py-4"><div className="h-4 w-12 bg-zinc-800/30 rounded"></div></td>
+                    <td className="py-4"><div className="h-4 w-10 bg-zinc-800/30 rounded"></div></td>
+                    <td className="py-4 pr-2"><div className="h-8 w-24 bg-zinc-800/30 rounded-full ml-auto"></div></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Mobile Cards Skeleton */}
+          <div className="lg:hidden space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="glass-card rounded-2xl p-4 border border-zinc-800/50">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-zinc-800/50 shrink-0"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-5 w-3/4 bg-zinc-800/30 rounded"></div>
+                    <div className="h-3 w-1/2 bg-zinc-800/30 rounded"></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="bg-black/10 rounded-xl p-3 h-14 border border-zinc-800/30"></div>
+                  <div className="bg-black/10 rounded-xl p-3 h-14 border border-zinc-800/30"></div>
+                </div>
+                <div className="border-t border-zinc-800/30 pt-4 mt-2">
+                  <div className="h-10 w-full bg-zinc-800/30 rounded-xl"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
         <div className="glass-card rounded-3xl p-6">
           {songs.length === 0 ? (

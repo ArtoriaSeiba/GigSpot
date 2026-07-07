@@ -266,7 +266,50 @@ END:VCALENDAR`;
       </header>
 
       {isLoading ? (
-        <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start mt-8 animate-pulse">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Hero Gig Skeleton */}
+            <div className="glass-card rounded-3xl p-6 h-[400px] flex flex-col justify-end border border-zinc-800/50 bg-zinc-900/20 relative">
+              <div className="h-6 w-24 bg-zinc-800/50 rounded-full mb-6"></div>
+              <div className="h-10 w-3/4 bg-zinc-800/50 rounded-xl mb-6"></div>
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="space-y-2">
+                  <div className="h-4 w-24 bg-zinc-800/50 rounded"></div>
+                  <div className="h-6 w-40 bg-zinc-800/30 rounded"></div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 w-24 bg-zinc-800/50 rounded"></div>
+                  <div className="h-6 w-40 bg-zinc-800/30 rounded"></div>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <div className="h-12 w-32 bg-zinc-800/50 rounded-xl"></div>
+                <div className="h-12 w-32 bg-zinc-800/50 rounded-xl"></div>
+              </div>
+            </div>
+            
+            {/* All Upcoming Gigs Skeleton */}
+            <div className="glass-card rounded-3xl p-6 border border-zinc-800/50 bg-zinc-900/20">
+              <div className="h-7 w-32 bg-zinc-800/50 rounded-lg mb-6"></div>
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex gap-4 items-center">
+                    <div className="w-12 h-12 rounded-xl bg-zinc-800/50 shrink-0"></div>
+                    <div className="space-y-2 flex-1">
+                      <div className="h-5 w-48 bg-zinc-800/50 rounded"></div>
+                      <div className="h-4 w-32 bg-zinc-800/30 rounded"></div>
+                    </div>
+                    <div className="h-8 w-20 bg-zinc-800/50 rounded-full shrink-0"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <div className="glass-card rounded-3xl p-6 border border-zinc-800/50 bg-zinc-900/20 h-48"></div>
+            <div className="glass-card rounded-3xl p-6 border border-zinc-800/50 bg-zinc-900/20 h-64"></div>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
           {/* Main Content Column */}

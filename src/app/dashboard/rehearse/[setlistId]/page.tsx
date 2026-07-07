@@ -40,9 +40,18 @@ export default function WebARRehearsalPage({ params }: { params: Promise<{ setli
 
   if (isLoading) {
     return (
-      <div className="h-[70vh] flex flex-col items-center justify-center gap-4 animate-fade-in">
-        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-        <p className="text-zinc-400 font-medium animate-pulse tracking-wide">Calibrating AR Engine...</p>
+      <div className="space-y-6 animate-pulse h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="h-10 w-48 bg-zinc-800/50 rounded-lg"></div>
+            <div className="h-4 w-64 bg-zinc-800/50 rounded"></div>
+          </div>
+          <div className="h-10 w-28 bg-zinc-800/50 rounded-full"></div>
+        </div>
+        <div className="relative flex-1 w-full bg-zinc-900/30 rounded-3xl overflow-hidden border border-zinc-800/50 flex flex-col items-center justify-center">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 border-4 border-dashed border-zinc-800/50 rounded-3xl"></div>
+          <div className="absolute bottom-8 h-16 w-48 bg-zinc-800/50 rounded-full"></div>
+        </div>
       </div>
     );
   }

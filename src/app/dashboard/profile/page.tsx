@@ -80,7 +80,68 @@ export default function ProfilePage() {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
+    return (
+      <div className="max-w-5xl mx-auto space-y-8 animate-pulse relative px-2 pb-24">
+        <header className="mb-8">
+          <div className="h-10 bg-zinc-800/50 rounded-lg w-64 mb-3"></div>
+          <div className="h-4 bg-zinc-800/50 rounded-lg w-96"></div>
+        </header>
+
+        <div className="space-y-16 mt-8">
+          {/* Cover Photo Skeleton */}
+          <div className="glass-card rounded-[2rem] border border-zinc-800/50 relative mb-12">
+            <div className="h-64 md:h-80 w-full bg-zinc-800/30 rounded-[2rem]"></div>
+            <div className="absolute -bottom-10 left-8 md:left-12">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-zinc-800/50 border-4 border-zinc-900"></div>
+            </div>
+          </div>
+
+          {/* Basic Info Skeleton */}
+          <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-zinc-800/50">
+            <div className="h-7 bg-zinc-800/50 rounded-lg w-48 mb-6"></div>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <div className="h-3 bg-zinc-800/50 rounded w-24"></div>
+                <div className="h-12 bg-zinc-800/30 rounded-xl w-full"></div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-3 bg-zinc-800/50 rounded w-32"></div>
+                <div className="h-12 bg-zinc-800/30 rounded-xl w-full"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact & Availability Skeleton */}
+          <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-zinc-800/50">
+            <div className="h-7 bg-zinc-800/50 rounded-lg w-48 mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <div className="h-3 bg-zinc-800/50 rounded w-24"></div>
+                <div className="h-12 bg-zinc-800/30 rounded-xl w-full"></div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-3 bg-zinc-800/50 rounded w-24"></div>
+                <div className="h-12 bg-zinc-800/30 rounded-xl w-full"></div>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <div className="h-3 bg-zinc-800/50 rounded w-36"></div>
+                <div className="h-24 bg-zinc-800/30 rounded-xl w-full"></div>
+              </div>
+            </div>
+          </div>
+          
+          {/* My Bands Skeleton */}
+          <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-zinc-800/50">
+            <div className="h-7 bg-zinc-800/50 rounded-lg w-32 mb-6"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-24 bg-zinc-800/30 rounded-2xl w-full"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

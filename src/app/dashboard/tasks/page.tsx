@@ -154,7 +154,39 @@ export default function TasksPage() {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
+    return (
+      <div className="max-w-6xl mx-auto space-y-8 animate-pulse relative">
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
+          <div className="space-y-2">
+            <div className="h-8 w-48 bg-zinc-800/50 rounded-lg"></div>
+            <div className="hidden lg:block h-4 w-96 bg-zinc-800/50 rounded-lg"></div>
+          </div>
+          <div className="h-10 w-full lg:w-32 bg-zinc-800/50 rounded-xl"></div>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8">
+          {[1, 2, 3].map((col) => (
+            <div key={col} className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="h-6 w-32 bg-zinc-800/50 rounded-lg"></div>
+                <div className="h-6 w-8 bg-zinc-800/50 rounded-full"></div>
+              </div>
+              <div className="space-y-4">
+                {[1, 2, 3].map((task) => (
+                  <div key={task} className="glass-card rounded-2xl p-4 border-l-4 border-zinc-800/50">
+                    <div className="h-5 w-3/4 bg-zinc-800/50 rounded mb-4"></div>
+                    <div className="space-y-2">
+                      <div className="h-3 w-1/2 bg-zinc-800/30 rounded"></div>
+                      <div className="h-3 w-1/3 bg-zinc-800/30 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   // Sort tasks by due date (closest first), nulls at the end

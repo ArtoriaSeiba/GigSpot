@@ -153,7 +153,65 @@ export default function BandManagementPage() {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
+    return (
+      <div className="max-w-7xl mx-auto space-y-8 animate-pulse relative">
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
+          <div className="space-y-2">
+            <div className="h-8 w-32 bg-zinc-800/50 rounded-lg"></div>
+            <div className="hidden lg:block h-4 w-96 bg-zinc-800/50 rounded"></div>
+          </div>
+          <div className="h-10 w-full lg:w-40 bg-zinc-800/50 rounded-xl"></div>
+        </header>
+
+        <div className="glass-card rounded-3xl p-4 md:p-6 border border-zinc-800/50 bg-zinc-900/20">
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-zinc-800/50">
+                  <th className="pb-4 pl-2"><div className="h-4 w-24 bg-zinc-800/50 rounded"></div></th>
+                  <th className="pb-4"><div className="h-4 w-32 bg-zinc-800/50 rounded"></div></th>
+                  <th className="pb-4"><div className="h-4 w-16 bg-zinc-800/50 rounded"></div></th>
+                  <th className="pb-4 pr-2"><div className="h-4 w-16 bg-zinc-800/50 rounded ml-auto"></div></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/30">
+                {[1, 2, 3].map((i) => (
+                  <tr key={i}>
+                    <td className="py-4 pl-2"><div className="h-5 w-32 bg-zinc-800/50 rounded"></div></td>
+                    <td className="py-4"><div className="h-4 w-48 bg-zinc-800/30 rounded"></div></td>
+                    <td className="py-4"><div className="h-6 w-20 bg-zinc-800/50 rounded-full"></div></td>
+                    <td className="py-4 pr-2">
+                      <div className="flex justify-end gap-2">
+                        <div className="h-8 w-8 bg-zinc-800/50 rounded-lg"></div>
+                        <div className="h-8 w-8 bg-zinc-800/50 rounded-lg"></div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="lg:hidden space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex flex-col p-4 rounded-2xl bg-zinc-800/30 border border-zinc-800/50 gap-3">
+                <div className="space-y-2">
+                  <div className="h-5 w-40 bg-zinc-800/50 rounded"></div>
+                  <div className="h-4 w-48 bg-zinc-800/30 rounded"></div>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/30 mt-1">
+                  <div className="h-6 w-20 bg-zinc-800/50 rounded-full"></div>
+                  <div className="flex gap-1">
+                    <div className="h-8 w-8 bg-zinc-800/50 rounded-lg"></div>
+                    <div className="h-8 w-8 bg-zinc-800/50 rounded-lg"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error && members.length === 0) {

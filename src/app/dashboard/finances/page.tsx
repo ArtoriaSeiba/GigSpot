@@ -107,7 +107,47 @@ export default function FinancesPage() {
   const netBalance = totalIncome - totalExpenses;
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>;
+    return (
+      <div className="max-w-7xl mx-auto space-y-8 animate-pulse relative">
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
+          <div className="space-y-2">
+            <div className="h-8 w-32 bg-zinc-800/50 rounded-lg"></div>
+            <div className="hidden lg:block h-4 w-64 bg-zinc-800/50 rounded"></div>
+          </div>
+          <div className="h-10 w-full lg:w-40 bg-zinc-800/50 rounded-xl"></div>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="glass-card p-6 rounded-3xl border border-zinc-800/50 bg-zinc-900/20">
+              <div className="flex items-center justify-between mb-4">
+                <div className="h-4 w-24 bg-zinc-800/50 rounded"></div>
+                <div className="w-8 h-8 rounded-full bg-zinc-800/50"></div>
+              </div>
+              <div className="h-8 w-32 bg-zinc-800/50 rounded-lg"></div>
+            </div>
+          ))}
+        </div>
+
+        <div className="glass-card rounded-3xl p-6 border border-zinc-800/50 bg-zinc-900/20">
+          <div className="h-6 w-48 bg-zinc-800/50 rounded-lg mb-6"></div>
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl bg-zinc-800/30 gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-zinc-800/50 shrink-0"></div>
+                  <div className="space-y-2">
+                    <div className="h-5 w-48 bg-zinc-800/50 rounded"></div>
+                    <div className="h-4 w-24 bg-zinc-800/30 rounded"></div>
+                  </div>
+                </div>
+                <div className="h-6 w-20 bg-zinc-800/50 rounded pl-14 md:pl-0"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

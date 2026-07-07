@@ -131,7 +131,30 @@ export default function GigSetlistPage({ params }: { params: Promise<{ gigId: st
   };
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
+    return (
+      <div className="max-w-6xl mx-auto space-y-8 animate-pulse relative">
+        <div className="h-4 w-24 bg-zinc-800/50 rounded mb-8"></div>
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-6 h-6 bg-zinc-800/50 rounded-full"></div>
+              <div className="h-8 w-64 bg-zinc-800/50 rounded-lg"></div>
+            </div>
+            <div className="h-4 w-32 bg-zinc-800/50 rounded ml-9"></div>
+          </div>
+        </header>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <div className="h-6 w-32 bg-zinc-800/50 rounded-lg mb-4"></div>
+            <div className="glass-card rounded-3xl p-6 h-96 border border-zinc-800/50 bg-zinc-900/20"></div>
+          </div>
+          <div className="space-y-4">
+            <div className="h-6 w-48 bg-zinc-800/50 rounded-lg mb-4"></div>
+            <div className="glass-card rounded-3xl p-6 h-96 border border-zinc-800/50 bg-zinc-900/20"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!gig) {

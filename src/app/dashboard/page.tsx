@@ -48,7 +48,55 @@ export default function OverviewDashboard() {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
+    return (
+      <div className="max-w-[1400px] mx-auto space-y-6 animate-pulse px-2">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 mt-12">
+          {/* HERO SKELETON */}
+          <div className="lg:col-span-8">
+            <div className="glass-card rounded-[2rem] p-6 md:p-10 border border-zinc-800/50 bg-zinc-900/20 h-full min-h-[280px] flex flex-col justify-center">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+                <div className="space-y-4 w-full">
+                  <div className="h-6 w-32 bg-zinc-800/50 rounded-full"></div>
+                  <div className="h-12 lg:h-16 w-3/4 bg-zinc-800/50 rounded-xl"></div>
+                  <div className="flex gap-4">
+                    <div className="h-10 w-40 bg-zinc-800/50 rounded-xl"></div>
+                    <div className="h-10 w-40 bg-zinc-800/50 rounded-xl"></div>
+                  </div>
+                </div>
+                <div className="h-14 w-full lg:w-48 bg-zinc-800/50 rounded-2xl shrink-0"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* STATS SKELETON */}
+          <div className="lg:col-span-4 grid grid-cols-2 gap-4 md:gap-6">
+            <div className="glass-card rounded-[2rem] p-6 border border-zinc-800/50 bg-zinc-900/20 h-40"></div>
+            <div className="glass-card rounded-[2rem] p-6 border border-zinc-800/50 bg-zinc-900/20 h-40"></div>
+            <div className="glass-card rounded-[2rem] p-6 border border-zinc-800/50 bg-zinc-900/20 col-span-2 h-32"></div>
+          </div>
+
+          {/* TASKS SKELETON */}
+          <div className="lg:col-span-8 glass-card rounded-[2rem] p-5 md:p-8 border border-zinc-800/50 bg-zinc-900/20 h-[400px]">
+            <div className="h-8 w-48 bg-zinc-800/50 rounded-lg mb-6"></div>
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-20 w-full bg-zinc-800/30 rounded-2xl"></div>
+              ))}
+            </div>
+          </div>
+
+          {/* BANDS SKELETON */}
+          <div className="lg:col-span-4 glass-card rounded-[2rem] p-5 md:p-8 border border-zinc-800/50 bg-zinc-900/20 h-[400px]">
+            <div className="h-8 w-40 bg-zinc-800/50 rounded-lg mb-6"></div>
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-16 w-full bg-zinc-800/30 rounded-2xl"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
