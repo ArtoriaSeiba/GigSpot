@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ChevronDown, Disc3, FileUp, Search } from "lucide-react";
+import { ChevronDown, Disc3, Search } from "lucide-react";
 import { ChartPreview } from "@/components/song-rehearsal-details";
-import { CHART_LIMIT, NOTES_LIMIT, formatRecordingDuration, parseSongKey, readChartMetadata, type AudioDraft, type RecordingMatch, type SongRehearsal } from "@/lib/song-rehearsal";
+import { CHART_LIMIT, NOTES_LIMIT, formatRecordingDuration, shiftSongKey, type AudioDraft, type RecordingMatch, type SongRehearsal } from "@/lib/song-rehearsal";
 import { workspaceErrorMessage, workspaceRequest } from "@/lib/workspace-requests";
 import { AudioAnalysis } from "./audio-analysis";
+import { ChartLinkImport } from "./chart-link-import";
+import type { ImportedChordChart } from "@/lib/jam-jam-chart";
 
 export type RepertoireSong = SongRehearsal & { id: string; artist: string | null };
+
+type RecordingServices = { keyTempo: boolean; freqBlog?: boolean; getSongBpm?: boolean; jamJam?: boolean; audio: boolean };
 
 const fields = ["title", "artist", "originalKey", "originalTempo", "key", "tempo", "chartKey", "chordChart", "rehearsalNotes", "tuning", "capo", "recordingAlbum", "recordingYear", "recordingDuration"] as const;
 type Field = typeof fields[number];
@@ -28,28 +32,26 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
   onCancel: () => void;
 }) {
   const [draft, setDraft] = useState(() => initialDraft(song));
-  const [services, setServices] = useState<{ keyTempo: boolean; audio: boolean }>();
+  const [services, setServices] = useState<RecordingServices>();
   const [mode, setMode] = useState<"search" | "manual" | "selected">(song ? "manual" : "search");
   const [titleQuery, setTitleQuery] = useState(song?.title ?? "");
   const [artistQuery, setArtistQuery] = useState("");
   const [search, setSearch] = useState<{ matches?: RecordingMatch[]; message?: string; busy?: boolean; failed?: boolean }>({});
   const [searchAttempt, setSearchAttempt] = useState(0);
-  const [enrichment, setEnrichment] = useState({ busy: false, message: "" });
-  const [chartStatus, setChartStatus] = useState<{ message: string; error?: boolean }>();
+  const [enrichment, setEnrichment] = useState<{ busy: boolean; message: string; retry?: RecordingMatch }>({ busy: false, message: "" });
+  const [chartStatus, setChartStatus] = useState("");
   const [useRecordingKeyForChart, setUseRecordingKeyForChart] = useState(!song?.chordChart);
   const [audioApplied, setAudioApplied] = useState("");
   const detailsRequest = useRef<AbortController>(null);
-  const chartImport = useRef<AbortController>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    void workspaceRequest<{ keyTempo: boolean; audio: boolean }>("/api/songs/lookup", "Could not check recording services.", { signal: controller.signal })
+    void workspaceRequest<RecordingServices>("/api/songs/lookup", "Could not check recording services.", { signal: controller.signal })
       .then(setServices)
       .catch(() => { if (!controller.signal.aborted) setServices({ keyTempo: false, audio: false }); });
     return () => {
       controller.abort();
       detailsRequest.current?.abort();
-      chartImport.current?.abort();
     };
   }, []);
 
@@ -74,8 +76,11 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
     };
   }, [mode, titleQuery, artistQuery, searchAttempt]);
 
-  const bandKey = draft.key.trim() || draft.originalKey.trim();
-  const chartKey = draft.chartKey.trim() || (useRecordingKeyForChart && !Number(draft.capo) ? draft.originalKey.trim() : "");
+  const capo = Number(draft.capo) || 0;
+  const chartKey = draft.chartKey.trim() || (useRecordingKeyForChart && !capo ? draft.originalKey.trim() : "");
+  const soundingKey = shiftSongKey(chartKey, capo);
+  const bandKey = draft.key.trim() || draft.originalKey.trim() || (draft.chordChart.trim() ? soundingKey : "");
+  const shapesFromOriginal = shiftSongKey(draft.originalKey, -capo);
   const recordingInfo = [draft.recordingAlbum, draft.recordingYear, formatRecordingDuration(Number(draft.recordingDuration))].filter(Boolean).join(" · ");
 
   function update(field: Field, value: string) {
@@ -84,10 +89,7 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
       ...((field === "title" || field === "artist") && current[field].trim().toLowerCase() !== value.trim().toLowerCase()
         && { recordingAlbum: "", recordingYear: "", recordingDuration: "" }),
     }));
-    if (field === "chordChart") {
-      chartImport.current?.abort();
-      setChartStatus(undefined);
-    }
+    if (field === "chordChart") setChartStatus("");
   }
 
   async function applyRecording(recording: RecordingMatch) {
@@ -108,15 +110,23 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
       return;
     }
     if (services?.keyTempo === false) {
-      setEnrichment({ busy: false, message: "Automatic key and BPM lookup needs a GetSongBPM API key." });
+      setEnrichment({ busy: false, message: "Automatic key and BPM lookup is unavailable. You can enter these under Arrangement, Chart & Notes." });
       return;
     }
+    await enrichRecording(recording);
+  }
+
+  async function enrichRecording(recording: RecordingMatch) {
+    detailsRequest.current?.abort();
     const controller = new AbortController();
     detailsRequest.current = controller;
     setEnrichment({ busy: true, message: "Looking up key and BPM…" });
-    const query = new URLSearchParams({ title: recording.title, artist: recording.artist, album: recording.album, details: "1" });
+    const query = new URLSearchParams({
+      title: recording.title, artist: recording.artist, album: recording.album,
+      itunesId: recording.id, duration: recording.duration?.toString() ?? "", details: "1",
+    });
     try {
-      const details = await workspaceRequest<Pick<RecordingMatch, "originalKey" | "originalTempo">>(
+      const details = await workspaceRequest<Pick<RecordingMatch, "originalKey" | "originalTempo"> & { pending?: boolean }>(
         `/api/songs/lookup?${query}`, "Could not look up key and BPM. You can still save this recording.", { signal: controller.signal },
       );
       if (controller.signal.aborted) return;
@@ -125,9 +135,14 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
         originalKey: current.originalKey || details.originalKey,
         originalTempo: current.originalTempo || details.originalTempo?.toString() || "",
       }));
-      setEnrichment({ busy: false, message: details.originalKey && details.originalTempo ? "" : "Some key or BPM details are unavailable for this recording." });
+      setEnrichment({
+        busy: false,
+        message: details.pending ? "Analysis is still running. Check again in a moment or save the song now."
+          : details.originalKey && details.originalTempo ? "" : "Some key or BPM details are unavailable for this recording.",
+        retry: details.pending ? recording : undefined,
+      });
     } catch {
-      if (!controller.signal.aborted) setEnrichment({ busy: false, message: "Could not look up key and BPM. You can still save this recording." });
+      if (!controller.signal.aborted) setEnrichment({ busy: false, message: "Could not look up key and BPM. You can still save this recording.", retry: recording });
     }
   }
 
@@ -158,42 +173,10 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
     setMode("search");
   }
 
-  async function importChart(file?: File) {
-    if (!file) return;
-    chartImport.current?.abort();
-    const controller = new AbortController();
-    chartImport.current = controller;
-    try {
-      if (file.size > CHART_LIMIT * 4) throw new Error("Choose a plain-text chart up to 16,000 characters.");
-      const chart = (await file.text()).replace(/^\uFEFF/, "").replace(/\r\n/g, "\n");
-      if (controller.signal.aborted) return;
-      if (!chart.trim() || chart.includes("\0") || chart.length > CHART_LIMIT) throw new Error("Choose a non-empty plain-text chart up to 16,000 characters.");
-      const metadata = readChartMetadata(chart);
-      setUseRecordingKeyForChart(false);
-      setDraft((current) => ({
-        ...current,
-        title: current.title || metadata.title.slice(0, 191) || titleQuery.trim(),
-        artist: current.artist || metadata.artist.slice(0, 191) || artistQuery.trim(),
-        chartKey: metadata.key,
-        chordChart: chart,
-        tempo: current.tempo || (!current.originalTempo ? metadata.tempo?.toString() ?? "" : ""),
-        tuning: metadata.tuning.slice(0, 100) || current.tuning,
-        capo: metadata.capo,
-      }));
-      if (mode === "search") setMode("manual");
-      setChartStatus({
-        message: `${file.name} imported.${metadata.tempo ? ` The file lists ${metadata.tempo} BPM. Check the band tempo before saving.` : ""}`,
-      });
-    } catch (error) {
-      if (!controller.signal.aborted) setChartStatus({ message: error instanceof Error ? error.message : "Could not read the chart.", error: true });
-    }
-  }
-
   function applyAudio(result: AudioDraft) {
     if (result.chart) {
-      chartImport.current?.abort();
       setUseRecordingKeyForChart(false);
-      setChartStatus(undefined);
+      setChartStatus("");
     }
     setDraft((current) => ({
       ...current,
@@ -204,6 +187,20 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
       capo: result.chart ? "" : current.capo,
     }));
     setAudioApplied("Analysis added to the form. Check the recording details and chart before saving.");
+  }
+
+  function applyLinkedChart(result: ImportedChordChart) {
+    setUseRecordingKeyForChart(false);
+    setDraft((current) => ({
+      ...current,
+      title: current.title || result.title || titleQuery.trim(),
+      artist: current.artist || result.artist || artistQuery.trim(),
+      chordChart: result.chart,
+      chartKey: result.key,
+      capo: result.capo?.toString() ?? "",
+    }));
+    if (mode === "search") setMode("manual");
+    setChartStatus("Jam Jam chords added to the draft. Save the song to keep them.");
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -311,9 +308,18 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
                 </div>
               </div>
               {enrichment.message && <p role="status" className="text-sm text-zinc-400">{enrichment.message}</p>}
+              {enrichment.retry && <button type="button" className="workspace-secondary" onClick={() => {
+                if (enrichment.retry) void enrichRecording(enrichment.retry);
+              }}>Check Key &amp; BPM Again</button>}
             </>
           )}
-          {services?.keyTempo && <a href="https://getsongbpm.com/" target="_blank" rel="noreferrer" className="text-xs text-violet-200 underline underline-offset-2">Key And Tempo By GetSongBPM</a>}
+          {services?.keyTempo && (
+            <p className="flex flex-wrap gap-3 text-xs text-zinc-400">
+              <span>Key &amp; BPM Sources</span>
+              {services.freqBlog && <a href="https://freqblog.com/" target="_blank" rel="noreferrer" className="text-violet-200 underline underline-offset-2">FreqBlog</a>}
+              {services.getSongBpm && <a href="https://getsongbpm.com/" target="_blank" rel="noreferrer" className="text-violet-200 underline underline-offset-2">GetSongBPM</a>}
+            </p>
+          )}
         </section>
 
         <details className="group rounded-2xl border border-white/10 p-4">
@@ -329,10 +335,9 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
           </div>
           <p className="text-sm text-zinc-400">Leave band key and tempo blank to use the original values. Changing the key shifts the chord preview. Tempo is independent.</p>
           <div className="grid gap-3 sm:grid-cols-2">
-            {textField("Band Key", "key", 50, draft.originalKey || "e.g. Gm")}
+            {textField("Band Key", "key", 50, draft.originalKey || soundingKey || "e.g. Gm")}
             {numberField("Band Tempo (BPM)", "tempo", 1, 500, draft.originalTempo)}
             {textField("Tuning", "tuning", 100, "e.g. Drop D")}
-            {numberField("Source Chart Capo (Fret)", "capo", 0, 24, "0 = No Capo")}
           </div>
           <label className="grid gap-1.5 text-sm font-medium">
             Rehearsal Notes
@@ -341,32 +346,27 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
           </div>
 
         <section className="mt-4 space-y-3 border-t border-white/10 pt-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-semibold">Chord Chart</h3>
-            <label className="workspace-secondary relative cursor-pointer focus-within:ring-2 focus-within:ring-violet-300">
-              <FileUp aria-hidden="true" className="size-4" /> Import Chart
-              <input type="file" aria-label="Import Chart" accept=".cho,.crd,.pro,.chordpro,.chopro,.chord,.txt,text/plain" className="sr-only" onChange={(event) => {
-                void importChart(event.target.files?.[0]);
-                event.target.value = "";
-              }} />
-            </label>
+          <h3 className="font-semibold">Chord Chart</h3>
+          <ChartLinkImport enabled={services?.jamJam === true} hasChart={Boolean(draft.chordChart.trim())} onApply={applyLinkedChart} />
+          <p className="text-sm text-zinc-400">Import from a link or paste a chart. Use square brackets for chords in lyrics, or write chords on their own line.</p>
+          {chartStatus && <p role="status" className="text-sm text-violet-200">{chartStatus}</p>}
+          <div className="grid max-w-lg grid-cols-2 gap-3">
+            {textField("Chord Shape Key", "chartKey", 50, chartKey || "e.g. C")}
+            {numberField("Chart Capo Fret", "capo", 0, 24, "0")}
           </div>
-          <p className="text-sm text-zinc-400">Import a ChordPro or plain-text file, or paste a chart you can share with your band. Use square brackets for chords in lyrics, or write chords on their own line.</p>
-          {chartStatus && <p role={chartStatus.error ? "alert" : "status"} className={`text-sm ${chartStatus.error ? "text-red-300" : "text-violet-200"}`}>{chartStatus.message}</p>}
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="w-40">{textField("Chart Source Key", "chartKey", 50, chartKey || "e.g. Am")}</div>
-            {parseSongKey(draft.originalKey) && !draft.chartKey && !chartKey && (
-              <button type="button" className="workspace-secondary" onClick={() => update("chartKey", draft.originalKey)}>Use Original Key</button>
-            )}
-          </div>
-          <p className="text-xs text-zinc-400">Use the key of the written chord shapes. For capo charts, check this against the imported key before saving.</p>
+          <p className="text-xs text-zinc-400">Enter the key of the chord shapes in Chart Text. C shapes with capo 5 sound in F. {soundingKey && <strong className="text-zinc-200">This chart sounds in {soundingKey}.</strong>}</p>
+          {shapesFromOriginal && !chartKey && (
+            <button type="button" className="workspace-secondary" onClick={() => update("chartKey", shapesFromOriginal)}>
+              Use {shapesFromOriginal} Shapes For Original Key
+            </button>
+          )}
           <label className="grid gap-1.5 text-sm font-medium">
             Chart Text
             <textarea name="chordChart" rows={5} maxLength={CHART_LIMIT} value={draft.chordChart} onChange={(event) => update("chordChart", event.target.value)} placeholder="Verse: C  G/B  Am  F" spellCheck={false} className="workspace-input min-h-28 resize-y font-mono" />
           </label>
           {draft.chordChart.trim() && (
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold">Chart Preview{parseSongKey(bandKey) ? ` · ${parseSongKey(bandKey)?.name}` : ""}</h4>
+              <h4 className="text-sm font-semibold">Band Preview (Concert Pitch)</h4>
               <ChartPreview chart={draft.chordChart} from={chartKey} to={bandKey} />
             </div>
           )}

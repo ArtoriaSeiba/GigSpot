@@ -90,31 +90,95 @@ function recordingMusic(matches: RecordingMatch[], title: string, artist: string
   };
 }
 
+type KeyTempo = ReturnType<typeof recordingMusic> & { pending?: boolean };
+const unknownMusic: KeyTempo = { originalKey: "", originalTempo: null };
+
+async function freqBlogMusic(
+  recording: { title: string; artist: string; album: string; itunesId: string; duration: number },
+  apiKey: string,
+  signal: AbortSignal,
+): Promise<KeyTempo> {
+  const { title, artist, album, itunesId, duration } = recording;
+  type Track = {
+    track_name?: string; artist_name?: string; album_name?: string; itunes_track_id?: string | number;
+    duration_ms?: number; key?: string; bpm?: number;
+  };
+  async function lookup(track: string): Promise<Track | "pending" | null> {
+    const url = new URL("https://api.freqblog.com/lookup");
+    url.search = new URLSearchParams({ track, artist, wait: "0" }).toString();
+    const response = await fetch(url, { headers: { "X-Api-Key": apiKey }, signal, cache: "no-store", redirect: "error" });
+    if (response.status === 202) return "pending";
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error("FreqBlog lookup failed");
+    return response.json();
+  }
+
+  let track = await lookup(title);
+  const shortTitle = title.replace(/\s*[([](?:feat\.?|ft\.?|featuring)\s+[^)\]]+[)\]]$/i, "").trim();
+  if (track && track !== "pending" && itunesId && String(track.itunes_track_id) !== itunesId && shortTitle && shortTitle !== title) {
+    // The shorter query can resolve the exact iTunes release instead of a reissue.
+    const alternative = await lookup(shortTitle).catch(() => null);
+    if (alternative && alternative !== "pending" && String(alternative.itunes_track_id) === itunesId &&
+        typeof alternative.track_name === "string" && normalized(alternative.track_name) === normalized(title) &&
+        typeof alternative.artist_name === "string" && normalized(alternative.artist_name) === normalized(artist)) {
+      track = alternative;
+    }
+  }
+  if (track === "pending") return { ...unknownMusic, pending: true };
+  if (typeof track?.track_name !== "string" || typeof track.artist_name !== "string" ||
+      normalized(track.track_name) !== normalized(title) || normalized(track.artist_name) !== normalized(artist)) {
+    return unknownMusic;
+  }
+
+  const exactId = Boolean(itunesId && String(track.itunes_track_id) === itunesId);
+  const matchedAlbum = Boolean(album && normalized(track.album_name ?? "") === normalized(album));
+  const matchedDuration = duration > 0 && typeof track.duration_ms === "number" &&
+    Math.abs(track.duration_ms - duration * 1000) <= 3000;
+  if (!exactId && !(matchedAlbum && matchedDuration)) return unknownMusic;
+
+  return {
+    originalKey: parseSongKey(typeof track.key === "string" ? track.key.replace(/-(?=major$|minor$)/i, " ") : "")?.name ?? "",
+    originalTempo: bpmValue(track.bpm),
+  };
+}
+
 export async function GET(req: Request) {
   const access = await songEditorAccess();
   if (access.error) return access.error;
   const query = new URL(req.url).searchParams;
   const apiKey = process.env.GETSONGBPM_API_KEY?.trim();
+  const freqBlogKey = process.env.FREQBLOG_API_KEY?.trim();
   if (!query.has("title")) return Response.json({
-    keyTempo: Boolean(apiKey),
+    keyTempo: Boolean(apiKey || freqBlogKey),
+    freqBlog: Boolean(freqBlogKey),
+    getSongBpm: Boolean(apiKey),
+    jamJam: Boolean(process.env.JAM_JAM_API_KEY?.trim()),
     audio: Boolean(process.env.MUSIC_AI_API_KEY?.trim() && process.env.MUSIC_AI_WORKFLOW?.trim()),
   });
 
   const title = compact(query.get("title"));
   const artist = compact(query.get("artist"));
   const album = compact(query.get("album"));
-  if (!normalized(title)) return Response.json({ matches: [] });
   const signal = AbortSignal.any([req.signal, AbortSignal.timeout(5500)]);
 
   if (query.get("details") === "1") {
-    if (!apiKey || !artist) return Response.json({ originalKey: "", originalTempo: null });
-    try {
-      return Response.json(recordingMusic(await searchGetSong(title, artist, apiKey, signal), title, artist, album));
-    } catch {
-      return Response.json({ error: "Could not look up the key and BPM. You can still save this recording." }, { status: 502 });
-    }
+    if (!normalized(title) || !normalized(artist)) return Response.json(unknownMusic);
+    const duration = Number(query.get("duration"));
+    const itunesId = query.get("itunesId") ?? "";
+    const recording = { title, artist, album, duration, itunesId: /^\d{1,20}$/.test(itunesId) ? itunesId : "" };
+    const providers: Promise<KeyTempo>[] = [];
+    if (freqBlogKey) providers.push(freqBlogMusic(recording, freqBlogKey, signal));
+    if (apiKey) providers.push(searchGetSong(title, artist, apiKey, signal).then((matches) => recordingMusic(matches, title, artist, album)));
+    const results = await Promise.allSettled(providers);
+    const completed = results.flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
+    const match = completed.find((result) => result.originalKey && result.originalTempo)
+      ?? completed.find((result) => result.originalKey || result.originalTempo)
+      ?? completed.find((result) => result.pending) ?? completed[0];
+    if (match || !providers.length) return Response.json(match ?? unknownMusic);
+    return Response.json({ error: "Could not look up the key and BPM. You can still save this recording." }, { status: 502 });
   }
 
+  if (!normalized(title)) return Response.json({ matches: [] });
   let catalogAvailable = true;
   try {
     const matches = await searchItunes(title, artist, signal);

@@ -1,4 +1,4 @@
-import { chroma, distance, transpose, simplify, enharmonic } from "@tonaljs/note";
+import { chroma, distance, transpose, simplify, enharmonic, fromMidi, pitchClass } from "@tonaljs/note";
 
 export const CHART_LIMIT = 16000;
 export const NOTES_LIMIT = 4000;
@@ -67,23 +67,14 @@ export function chordParts(value: string) {
   return asciiAccidentals(value).match(chordPattern);
 }
 
-export function readChartMetadata(chart: string) {
-  const fields: Record<string, string> = {};
-  for (const line of chart.split(/\r?\n/)) {
-    const directive = line.match(/^\s*\{(title|t|artist|key|tempo|bpm|capo|tuning):\s*([^}]+)\}\s*$/i);
-    if (directive) fields[directive[1].toLowerCase()] = directive[2].trim();
-  }
-  return {
-    title: fields.title || fields.t || "",
-    artist: fields.artist || "",
-    key: parseSongKey(fields.key)?.name ?? "",
-    tempo: bpmValue(fields.tempo || fields.bpm),
-    capo: /^\d+$/.test(fields.capo ?? "") && Number(fields.capo) <= 24 ? fields.capo : "",
-    tuning: fields.tuning || "",
-  };
+export function shiftSongKey(key: string | null | undefined, semitones: number) {
+  const parsed = parseSongKey(key);
+  if (!parsed || !Number.isInteger(semitones) || Math.abs(semitones) > 24) return "";
+  if (semitones % 12 === 0) return parsed.name;
+  return pitchClass(fromMidi(60 + chroma(parsed.root) + semitones)) + (parsed.minor ? "m" : "");
 }
 
-export function chartPreview(chart: string, chartKey?: string | null, bandKey?: string | null) {
+export function chartPreview(chart: string, chartKey?: string | null, bandKey?: string | null, preserveDirectives = false) {
   const source = parseSongKey(chartKey);
   const target = parseSongKey(bandKey);
   const status = !source ? "source" : !target ? "target" : source.minor !== target.minor ? "mode" : "ready";
@@ -110,6 +101,7 @@ export function chartPreview(chart: string, chartKey?: string | null, bandKey?: 
   const lines = chart.split(/\r?\n/).flatMap((line) => {
     const directive = line.match(/^\s*\{([^}:]+)(?::\s*(.*?))?\}\s*$/);
     if (directive) {
+      if (preserveDirectives) return [line];
       const [, name, label] = directive;
       const headings: Record<string, string> = { soc: "Chorus", start_of_chorus: "Chorus", sov: "Verse", start_of_verse: "Verse", sob: "Bridge", start_of_bridge: "Bridge", c: "", comment: "", ci: "", comment_italic: "", cb: "", comment_box: "" };
       return Object.hasOwn(headings, name.toLowerCase()) ? [label || headings[name.toLowerCase()]] : [];

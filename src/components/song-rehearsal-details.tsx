@@ -1,9 +1,9 @@
-import { chartPreview, formatRecordingDuration, type SongRehearsal } from "@/lib/song-rehearsal";
+import { chartPreview, formatRecordingDuration, shiftSongKey, type SongRehearsal } from "@/lib/song-rehearsal";
 
 export function ChartPreview({ chart, from, to }: { chart: string; from?: string | null; to?: string | null }) {
   const { status, text } = chartPreview(chart, from, to);
   const message = {
-    source: "Showing the written chart. Set its source key to enable transposition.",
+    source: "Showing the written chart. Set its chord shape key to enable transposition.",
     target: "Showing the written chart. Set a valid band key to transpose it.",
     mode: "Showing the written chart. Transposition needs matching major or minor modes.",
     ready: "",
@@ -24,6 +24,7 @@ export function ChartPreview({ chart, from, to }: { chart: string; from?: string
 
 export function SongRehearsalDetails({ song }: { song: SongRehearsal }) {
   const recording = [song.recordingAlbum, song.recordingYear, formatRecordingDuration(song.recordingDuration)].filter(Boolean).join(" · ");
+  const soundingKey = shiftSongKey(song.chartKey, song.capo ?? 0);
   const settings = [
     ["Band Key", song.key],
     ["Band Tempo", song.tempo && `${song.tempo} BPM`],
@@ -53,8 +54,15 @@ export function SongRehearsalDetails({ song }: { song: SongRehearsal }) {
       {song.chordChart && (
         <section className="space-y-2">
           <h3 className="text-sm font-semibold">Chord Chart</h3>
-          {Boolean(song.capo) && <p className="text-xs text-zinc-400">The capo applies to the source chart. The preview uses concert-pitch chord names.</p>}
-          <ChartPreview chart={song.chordChart} from={song.chartKey} to={song.key} />
+          {Boolean(song.capo) && (
+            <details className="space-y-2">
+              <summary className="cursor-pointer text-sm text-violet-200">Show Guitar Shapes With Capo {song.capo}</summary>
+              {song.chartKey && <p className="text-xs text-zinc-400">{song.chartKey} shapes sound in {soundingKey} with this capo.</p>}
+              <ChartPreview chart={song.chordChart} from={song.chartKey} to={song.chartKey} />
+            </details>
+          )}
+          {Boolean(song.capo) && <p className="text-xs text-zinc-400">Band Preview (Concert Pitch)</p>}
+          <ChartPreview chart={song.chordChart} from={song.chartKey} to={song.key || soundingKey} />
         </section>
       )}
       {song.rehearsalNotes && (
