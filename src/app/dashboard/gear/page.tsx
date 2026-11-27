@@ -107,16 +107,15 @@ export default function GearInventoryPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
+      <header className="workspace-header">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">Gear Inventory</h1>
-        </div>
+          <h1>Gear Inventory</h1></div>
         {bandRole === "ADMIN" && (
           <motion.button 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => openModal()}
-            className="w-full lg:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+            className="workspace-primary shrink-0"
           >
             <Plus className="w-5 h-5" />
             Add Item
@@ -152,7 +151,7 @@ export default function GearInventoryPage() {
               <div className="w-16 h-16 bg-zinc-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-zinc-800">
                 <Briefcase className="w-8 h-8 text-zinc-500" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">No gear logged yet</h3>
+              <h3 className="text-xl font-bold text-white mb-2">No Gear Logged Yet</h3>
               <p className="text-zinc-400">Add instruments, cables, and PA equipment to manage who holds what.</p>
             </div>
           ) : (
@@ -177,7 +176,7 @@ export default function GearInventoryPage() {
                     </div>
                     <div className="mb-4">
                       <span className="px-2.5 py-1 rounded bg-zinc-900/80 text-xs font-semibold text-zinc-400 border border-zinc-800">
-                        {item.type}
+                        {item.type.toLowerCase() === "pa system" ? "PA System" : item.type}
                       </span>
                     </div>
                     
@@ -188,11 +187,11 @@ export default function GearInventoryPage() {
                           Condition
                         </span>
                         <span className={item.condition === "Needs Repair" ? "text-red-400 font-medium" : "text-emerald-400 font-medium"}>
-                          {item.condition}
+                          {item.condition === "Needs Repair" ? "Needs Repair" : item.condition}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-zinc-400">
-                        <span>Assigned to</span>
+                        <span>Assigned To</span>
                         <span className="text-zinc-200 font-medium">{item.assignedTo || "Unassigned"}</span>
                       </div>
                     </div>
@@ -246,7 +245,7 @@ export default function GearInventoryPage() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-300 ml-1">Assigned Member (Optional)</label>
-                <input type="text" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="Band Member Name" />
+                <input type="text" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="Band member name" />
               </div>
 
               <div className="pt-4 flex gap-3">

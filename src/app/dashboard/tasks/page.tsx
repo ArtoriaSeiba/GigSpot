@@ -1,448 +1,300 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Loader2, Plus, X, CheckSquare, Clock, ArrowRight, Trash2, Edit2, Calendar } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, type FormEvent } from "react";
+import { Calendar, Pencil, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
 import toast from "react-hot-toast";
+import { WorkspaceDialog } from "@/components/workspace-dialog";
+import { workspaceErrorMessage, workspaceMutation, workspaceRequest, type BandRole } from "@/lib/workspace-requests";
+import { taskAssigneeIds } from "@/lib/utils";
 
-type Task = {
-  id: string;
-  title: string;
-  status: "PENDING" | "IN_PROGRESS" | "COMPLETED";
-  assignedTo: string | null;
-  dueDate: string | null;
+const statuses = [
+  { id: "PENDING", label: "Pending", color: "text-zinc-300" },
+  { id: "IN_PROGRESS", label: "In Progress", color: "text-cyan-300" },
+  { id: "COMPLETED", label: "Completed", color: "text-emerald-300" },
+] as const;
+
+type Status = (typeof statuses)[number]["id"];
+type Task = { id: string; title: string; status: Status; assignedTo: string | null; dueDate: string | null };
+type Member = { userId: string; user: { name: string | null; email: string | null } };
+type Board =
+  | { status: "loading" | "error" | "no-band" }
+  | { status: "ready"; tasks: Task[]; members: Member[]; band: BandRole };
+
+const transitions: Record<Status, { to: Status; label: string }[]> = {
+  PENDING: [{ to: "IN_PROGRESS", label: "Start" }],
+  IN_PROGRESS: [{ to: "PENDING", label: "Move To Pending" }, { to: "COMPLETED", label: "Complete" }],
+  COMPLETED: [{ to: "IN_PROGRESS", label: "Reopen" }],
 };
 
+const dueDateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeZone: "UTC" });
+
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [bandRole, setBandRole] = useState("MUSICIAN");
-  const [error, setError] = useState("");
-
-  // Form State
-  const [title, setTitle] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const openModal = (task?: Task) => {
-    if (task) {
-      setEditingTask(task);
-      setTitle(task.title);
-      setAssignedTo(task.assignedTo || "");
-      setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "");
-    } else {
-      setEditingTask(null);
-      setTitle("");
-      setAssignedTo("");
-      setDueDate("");
-    }
-    setError("");
-    setIsModalOpen(true);
-  };
-
-  const [members, setMembers] = useState<any[]>([]);
-  const [userId, setUserId] = useState<string>("");
-
-  const fetchTasks = async () => {
-    try {
-      const [roleRes, membersRes, tasksRes] = await Promise.all([
-        fetch("/api/band/role"),
-        fetch("/api/band/members"),
-        fetch("/api/tasks")
-      ]);
-
-      if (roleRes.ok) {
-        const { role, userId } = await roleRes.json();
-        setBandRole(role);
-        setUserId(userId);
-      }
-      if (membersRes.ok) {
-        const data = await membersRes.json();
-        setMembers(data.members || []);
-      }
-      if (tasksRes.ok) {
-        const data = await tasksRes.json();
-        setTasks(Array.isArray(data) ? data : []);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [board, setBoard] = useState<Board>({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
+  const [myTasksOnly, setMyTasksOnly] = useState(false);
+  const [mobileStatus, setMobileStatus] = useState<Status>("PENDING");
+  const [editing, setEditing] = useState<Task | null>();
+  const [deleting, setDeleting] = useState<Task>();
+  const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [updating, setUpdating] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    const controller = new AbortController();
+    const options = { signal: controller.signal };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError("");
-    try {
-      const url = "/api/tasks";
-      const method = editingTask ? "PUT" : "POST";
-      const body = editingTask 
-        ? JSON.stringify({ taskId: editingTask.id, title, assignedTo, dueDate })
-        : JSON.stringify({ title, assignedTo, dueDate });
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body,
-      });
-      if (res.ok) {
-        toast.success(editingTask ? "Task updated!" : "Task created!");
-        setIsModalOpen(false);
-        fetchTasks();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "An error occurred");
-        setError(data.error || "An error occurred");
+    async function load() {
+      try {
+        const band = await workspaceRequest<BandRole>("/api/band/role", "Could not load your band.", options);
+        if (!band.bandId) {
+          if (!controller.signal.aborted) setBoard({ status: "no-band" });
+          return;
+        }
+        const [tasks, roster] = await Promise.all([
+          workspaceRequest<Task[]>("/api/tasks", "Could not load tasks.", options),
+          workspaceRequest<{ members: Member[] }>("/api/band/members", "Could not load band members.", options),
+        ]);
+        if (!controller.signal.aborted) setBoard({ status: "ready", tasks, members: roster.members, band });
+      } catch {
+        if (!controller.signal.aborted) setBoard({ status: "error" });
       }
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to submit. Check your connection.");
-      setError("Failed to submit. Check your connection.");
-    } finally {
-      setIsSubmitting(false);
     }
-  };
 
-  const handleDelete = async (taskId: string) => {
-    if (!confirm("Delete this task?")) return;
-    try {
-      const res = await fetch("/api/tasks", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taskId })
-      });
-      if (res.ok) {
-        toast.success("Task deleted");
-        fetchTasks();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "Failed to delete task");
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error("Network error");
-    }
-  };
+    void load();
+    return () => controller.abort();
+  }, [attempt]);
 
-  const updateStatus = async (taskId: string, newStatus: string) => {
-    try {
-      const res = await fetch("/api/tasks", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taskId, status: newStatus }),
-      });
-      if (res.ok) {
-        toast.success("Task status updated");
-        fetchTasks();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "Failed to update status");
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error("Network error");
-    }
-  };
+  const tasks = board.status === "ready" ? board.tasks : [];
+  const members = board.status === "ready" ? board.members : [];
+  const userId = board.status === "ready" ? board.band.userId : undefined;
+  const isAdmin = board.status === "ready" && board.band.role === "ADMIN";
+  const filtered = tasks.filter((task) => !myTasksOnly || taskAssigneeIds(task.assignedTo).includes(userId ?? ""));
+  const memberNames = new Map(members.map((member) => [member.userId, member.user.name || member.user.email || "Unnamed member"]));
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
-  if (isLoading) {
-    return (
-      <div className="max-w-6xl mx-auto space-y-8 animate-pulse relative">
-        <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
-          <div className="space-y-2">
-            <div className="h-8 w-48 bg-zinc-800/50 rounded-lg"></div>
-            <div className="hidden lg:block h-4 w-96 bg-zinc-800/50 rounded-lg"></div>
-          </div>
-          <div className="h-10 w-full lg:w-32 bg-zinc-800/50 rounded-xl"></div>
-        </header>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8">
-          {[1, 2, 3].map((col) => (
-            <div key={col} className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="h-6 w-32 bg-zinc-800/50 rounded-lg"></div>
-                <div className="h-6 w-8 bg-zinc-800/50 rounded-full"></div>
-              </div>
-              <div className="space-y-4">
-                {[1, 2, 3].map((task) => (
-                  <div key={task} className="glass-card rounded-2xl p-4 border-l-4 border-zinc-800/50">
-                    <div className="h-5 w-3/4 bg-zinc-800/50 rounded mb-4"></div>
-                    <div className="space-y-2">
-                      <div className="h-3 w-1/2 bg-zinc-800/30 rounded"></div>
-                      <div className="h-3 w-1/3 bg-zinc-800/30 rounded"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+  function openEditor(task: Task | null) {
+    setFormError("");
+    setEditing(task);
   }
 
-  // Sort tasks by due date (closest first), nulls at the end
-  const sortTasks = (a: Task, b: Task) => {
-    if (a.dueDate && b.dueDate) return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-    if (a.dueDate) return -1;
-    if (b.dueDate) return 1;
-    return 0;
-  };
+  function recordTask(task: Task) {
+    setBoard((current) => current.status === "ready" ? {
+      ...current,
+      tasks: [...current.tasks.filter((item) => item.id !== task.id), task],
+    } : current);
+  }
 
-  const pendingTasks = tasks.filter(t => t.status === "PENDING").sort(sortTasks);
-  const inProgressTasks = tasks.filter(t => t.status === "IN_PROGRESS").sort(sortTasks);
-  const completedTasks = tasks.filter(t => t.status === "COMPLETED").sort(sortTasks);
+  async function saveTask(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSaving) return;
+    const values = new FormData(event.currentTarget);
+    const title = String(values.get("title") ?? "").trim();
+    if (!title) {
+      setFormError("Enter a task title.");
+      return;
+    }
+    setIsSaving(true);
+    setFormError("");
+    try {
+      const formerAssignees = taskAssigneeIds(editing?.assignedTo).filter((id) => !memberNames.has(id));
+      const task = await workspaceMutation<Task>("/api/tasks", editing ? "PUT" : "POST", {
+        ...(editing && { taskId: editing.id }),
+        title,
+        assignedTo: [...values.getAll("assignee"), ...formerAssignees].join(","),
+        dueDate: String(values.get("dueDate") ?? ""),
+      }, "Could not save the task. Please try again.");
+      recordTask(task);
+      setMobileStatus(task.status);
+      setEditing(undefined);
+      toast.success(editing ? "Task updated." : "Task created.");
+    } catch (error) {
+      const message = workspaceErrorMessage(error, "Could not save the task. Please try again.");
+      setFormError(message);
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function deleteTask(task: Task) {
+    if (isSaving) return;
+    setIsSaving(true);
+    setFormError("");
+    try {
+      await workspaceMutation("/api/tasks", "DELETE", { taskId: task.id }, "Could not delete the task.");
+      setBoard((current) => current.status === "ready" ? {
+        ...current,
+        tasks: current.tasks.filter((item) => item.id !== task.id),
+      } : current);
+      setDeleting(undefined);
+      toast.success("Task deleted.");
+    } catch (error) {
+      const message = workspaceErrorMessage(error, "Could not delete the task. Please try again.");
+      setFormError(message);
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function updateStatus(task: Task, status: Status) {
+    if (updating[task.id]) return;
+    setUpdating((current) => ({ ...current, [task.id]: true }));
+    try {
+      recordTask(await workspaceMutation<Task>("/api/tasks", "PATCH", { taskId: task.id, status }, "Could not update task status."));
+      toast.success(`Moved to ${statuses.find((column) => column.id === status)?.label.toLowerCase()}.`);
+    } catch (error) {
+      toast.error(workspaceErrorMessage(error, "Could not update task status. Please try again."));
+    } finally {
+      setUpdating((current) => ({ ...current, [task.id]: false }));
+    }
+  }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative">
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">Task Board</h1>
-          <p className="hidden lg:block text-zinc-400 text-sm max-w-xl">
-            Delegate responsibilities and track progress. You can use this board for <strong>anything</strong>: next practice prep, gig logistics, gear maintenance, or social media tasks.
-          </p>
-        </div>
-        {bandRole === "ADMIN" && (
-          <button 
-            onClick={() => openModal()}
-            className="w-full lg:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20 shrink-0"
-          >
-            <Plus className="w-5 h-5" />
-            New Task
-          </button>
-        )}
+    <div className="space-y-6">
+      <header className="workspace-header">
+        <div><h1>Tasks</h1><p>Track what needs doing for rehearsals and gigs.</p></div>
+        {isAdmin && <button type="button" className="workspace-primary shrink-0" onClick={() => openEditor(null)}><Plus aria-hidden="true" className="size-5" /> New Task</button>}
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        {/* Pending Column */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Clock className="w-5 h-5 text-zinc-400" />
-              Pending
-            </h2>
-            <span className="bg-zinc-800 text-zinc-400 text-xs px-2 py-1 rounded-full">{pendingTasks.length}</span>
-          </div>
-          <AnimatePresence>
-            {pendingTasks.map(task => (
-              <motion.div 
-                layout 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                key={task.id} 
-                className="glass-card rounded-2xl p-4 border-l-4 border-zinc-500 group"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-white flex-1">{task.title}</h3>
-                  {bandRole === "ADMIN" && (
-                    <div className="transition-opacity flex gap-2">
-                      <button onClick={(e) => { e.stopPropagation(); openModal(task); }} className="text-zinc-500 hover:text-indigo-400"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDelete(task.id); }} className="text-zinc-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 mb-4">
-                  {task.assignedTo && (
-                    <p className="text-xs text-zinc-400 line-clamp-1">
-                      Assigned: {task.assignedTo.split(',').map(id => {
-                        const m = members.find((mem: any) => mem.userId === id.trim());
-                        return m ? (m.user?.name || m.user?.email || "Unknown") : "Unknown";
-                      }).join(', ')}
-                    </p>
-                  )}
-                  {task.dueDate && <p className="text-xs text-indigo-400 flex items-center gap-1"><Calendar className="w-3 h-3" /> Due: {new Date(task.dueDate).toLocaleDateString()}</p>}
-                </div>
-                {(bandRole === "ADMIN" || (task.assignedTo && task.assignedTo.split(',').map((i: string) => i.trim()).includes(userId))) && (
-                  <div className="flex justify-end transition-opacity">
-                    <button onClick={() => updateStatus(task.id, "IN_PROGRESS")} className="text-xs font-medium text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
-                      Start <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {/* In Progress Column */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Loader2 className="w-5 h-5 text-cyan-400" />
-              In Progress
-            </h2>
-            <span className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs px-2 py-1 rounded-full">{inProgressTasks.length}</span>
-          </div>
-          <AnimatePresence>
-            {inProgressTasks.map(task => (
-              <motion.div 
-                layout 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                key={task.id} 
-                className="glass-card rounded-2xl p-4 border-l-4 border-cyan-500 group"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-white flex-1">{task.title}</h3>
-                  {bandRole === "ADMIN" && (
-                    <div className="transition-opacity flex gap-2">
-                      <button onClick={(e) => { e.stopPropagation(); openModal(task); }} className="text-cyan-600 hover:text-cyan-400"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDelete(task.id); }} className="text-cyan-600 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 mb-4">
-                  {task.assignedTo && (
-                    <p className="text-xs text-cyan-200/50 line-clamp-1">
-                      Assigned: {task.assignedTo.split(',').map(id => {
-                        const m = members.find((mem: any) => mem.userId === id.trim());
-                        return m ? (m.user?.name || m.user?.email || "Unknown") : "Unknown";
-                      }).join(', ')}
-                    </p>
-                  )}
-                  {task.dueDate && <p className="text-xs text-cyan-400 flex items-center gap-1"><Calendar className="w-3 h-3" /> Due: {new Date(task.dueDate).toLocaleDateString()}</p>}
-                </div>
-                {(bandRole === "ADMIN" || (task.assignedTo && task.assignedTo.split(',').map((i: string) => i.trim()).includes(userId))) && (
-                  <div className="flex justify-between transition-opacity">
-                    <button onClick={() => updateStatus(task.id, "PENDING")} className="text-xs font-medium text-zinc-400 hover:text-zinc-300">
-                      Undo
-                    </button>
-                    <button onClick={() => updateStatus(task.id, "COMPLETED")} className="text-xs font-medium text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-                      Complete <CheckSquare className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {/* Completed Column */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <CheckSquare className="w-5 h-5 text-emerald-400" />
-              Completed
-            </h2>
-            <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-2 py-1 rounded-full">{completedTasks.length}</span>
-          </div>
-          <AnimatePresence>
-            {completedTasks.map(task => (
-              <motion.div 
-                layout 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                key={task.id} 
-                className="glass-card rounded-2xl p-4 border-l-4 border-emerald-500 opacity-60 group"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-white line-through flex-1">{task.title}</h3>
-                  {bandRole === "ADMIN" && (
-                    <div className="transition-opacity flex gap-2">
-                      <button onClick={(e) => { e.stopPropagation(); openModal(task); }} className="text-emerald-600 hover:text-emerald-400"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDelete(task.id); }} className="text-emerald-600 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 mb-4">
-                  {task.assignedTo && (
-                    <p className="text-xs text-emerald-200/50 line-through line-clamp-1">
-                      Assigned: {task.assignedTo.split(',').map(id => {
-                        const m = members.find((mem: any) => mem.userId === id);
-                        return m ? (m.user?.name || m.user?.email || "Unknown") : "Unknown";
-                      }).join(', ')}
-                    </p>
-                  )}
-                </div>
-                {(bandRole === "ADMIN" || (task.assignedTo && task.assignedTo.split(',').includes(userId))) && (
-                  <div className="flex justify-start transition-opacity">
-                    <button onClick={() => updateStatus(task.id, "IN_PROGRESS")} className="text-xs font-medium text-zinc-400 hover:text-zinc-300">
-                      Undo
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="glass-card rounded-3xl w-full max-w-md p-6 border border-zinc-700/50 shadow-2xl relative"
-          >
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-white">
-              <X className="w-5 h-5" />
-            </button>
-            <h2 className="text-2xl font-bold text-white mb-6">{editingTask ? "Edit Task" : "Create Task"}</h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">
-                  {error}
-                </div>
-              )}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-300 ml-1">Task Title</label>
-                <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="e.g. Book the van for Saturday" />
+      {board.status !== "ready" ? (
+        <section className="workspace-panel space-y-3" aria-label="Task Board Status">
+          {board.status === "loading" && <p role="status" className="text-sm text-zinc-400">Loading Tasks…</p>}
+          {board.status === "error" && (
+            <>
+              <p role="alert">Could not load your tasks.</p>
+              <button type="button" className="workspace-secondary" onClick={() => {
+                setBoard({ status: "loading" });
+                setAttempt((value) => value + 1);
+              }}>Try Again</button>
+            </>
+          )}
+          {board.status === "no-band" && (
+            <>
+              <p>Join or create a band to use the task board.</p>
+              <Link href="/dashboard" className="workspace-secondary">Go To Dashboard</Link>
+            </>
+          )}
+        </section>
+      ) : (
+        <>
+          {userId && (tasks.length > 0 || myTasksOnly) && (
+            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 workspace-secondary rounded-xl px-3 text-sm font-medium">
+              <input type="checkbox" checked={myTasksOnly} onChange={(event) => setMyTasksOnly(event.target.checked)} className="size-4 accent-indigo-500" />
+              Assigned To Me
+            </label>
+          )}
+          {filtered.length === 0 ? (
+            <section className="workspace-panel space-y-2" aria-label="Empty Task Board">
+              <h2 className="text-lg font-semibold">{myTasksOnly ? "No Tasks Assigned To You" : "No Tasks Yet"}</h2>
+              <p className="text-sm text-zinc-400">{myTasksOnly ? "Turn off the filter to see the whole board." : isAdmin ? "Create a task to start organizing your band’s work." : "Tasks will appear here when a band admin adds them."}</p>
+            </section>
+          ) : (
+            <>
+              <fieldset className="grid grid-cols-3 gap-1 rounded-xl border border-zinc-800 bg-zinc-900 p-1 lg:hidden">
+                <legend className="sr-only">Task Status</legend>
+                {statuses.map(({ id, label }) => (
+                  <label key={id} className="relative grid min-h-11 cursor-pointer place-items-center rounded-lg px-1 text-center text-xs font-medium text-zinc-300 has-checked:bg-indigo-500/20 has-checked:text-indigo-100 has-focus-visible:outline-2 has-focus-visible:outline-indigo-300 sm:text-sm">
+                    <input type="radio" name="task-status" value={id} checked={mobileStatus === id} onChange={() => setMobileStatus(id)} className="sr-only" />
+                    {label}
+                  </label>
+                ))}
+              </fieldset>
+              <div className="grid gap-4 lg:grid-cols-3">
+                {statuses.map(({ id, label, color }) => {
+                  const column = filtered.filter((task) => task.status === id)
+                    .sort((a, b) => (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999") || a.title.localeCompare(b.title));
+                  return (
+                    <section key={id} aria-labelledby={`tasks-${id}`} className={`workspace-panel ${mobileStatus === id ? "block" : "hidden lg:block"}`}>
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <h2 id={`tasks-${id}`} className={`font-semibold ${color}`}>{label}</h2>
+                        <span className="rounded-lg bg-zinc-800 px-2 py-1 text-xs tabular-nums text-zinc-300">{column.length}</span>
+                      </div>
+                      {column.length === 0 && <p className="py-3 text-sm text-zinc-400">No tasks in this status.</p>}
+                      <ul className="space-y-3">
+                        {column.map((task) => {
+                          const ids = taskAssigneeIds(task.assignedTo);
+                          const canUpdate = isAdmin || ids.includes(userId ?? "");
+                          const dueKey = task.dueDate?.slice(0, 10);
+                          const dueLabel = id !== "COMPLETED" && dueKey && dueKey < todayKey ? "Overdue" : id !== "COMPLETED" && dueKey === todayKey ? "Due Today" : "Due";
+                          return (
+                            <li key={task.id} className="workspace-row space-y-2 rounded-xl border p-3" aria-busy={updating[task.id] || undefined}>
+                              <h3 className="break-words font-medium">{task.title}</h3>
+                              <p className="break-words text-sm text-zinc-400">{ids.length ? ids.map((id) => memberNames.get(id) ?? "Former or unknown member").join(", ") : "Unassigned"}</p>
+                              {dueKey && (
+                                <p className={`flex items-start gap-1.5 text-xs ${dueLabel === "Overdue" ? "text-red-300" : dueLabel === "Due Today" ? "text-amber-300" : "text-zinc-400"}`}>
+                                  <Calendar aria-hidden="true" className="size-4 shrink-0" />
+                                  <span>{dueLabel} · <time dateTime={dueKey}>{dueDateFormat.format(new Date(dueKey))}</time></span>
+                                </p>
+                              )}
+                              {(canUpdate || isAdmin) && (
+                                <div className="flex flex-wrap items-center gap-1 border-t border-zinc-800 pt-2">
+                                  {canUpdate && transitions[id].map(({ to, label }) => (
+                                    <button key={to} type="button" disabled={updating[task.id]} onClick={() => void updateStatus(task, to)} className="workspace-secondary px-2 text-xs">{updating[task.id] ? "Moving…" : label}</button>
+                                  ))}
+                                  {isAdmin && (
+                                    <>
+                                      <button type="button" disabled={updating[task.id]} aria-label={`Edit ${task.title}`} className="workspace-icon-button" onClick={() => openEditor(task)}><Pencil aria-hidden="true" className="size-4" /></button>
+                                      <button type="button" disabled={updating[task.id]} aria-label={`Delete ${task.title}`} className="workspace-icon-button hover:text-red-300" onClick={() => {
+                                        setFormError("");
+                                        setDeleting(task);
+                                      }}><Trash2 aria-hidden="true" className="size-4" /></button>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </section>
+                  );
+                })}
               </div>
+            </>
+          )}
+        </>
+      )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5 flex flex-col">
-                  <label className="text-xs font-medium text-zinc-300 ml-1">Assign To (Optional)</label>
-                  <div className="flex-1 glass-input rounded-xl p-2 max-h-32 overflow-y-auto custom-scrollbar flex flex-col gap-1">
-                    {members.length === 0 && <span className="text-xs text-zinc-500 p-1">No members found</span>}
-                    {members.map((m: any) => (
-                      <label key={m.userId} className="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-zinc-800/50 transition-colors group">
-                        <input 
-                          type="checkbox" 
-                          checked={assignedTo.split(',').includes(m.userId)}
-                          onChange={(e) => {
-                            const current = assignedTo ? assignedTo.split(',') : [];
-                            if (e.target.checked) {
-                               setAssignedTo([...current, m.userId].join(','));
-                            } else {
-                               setAssignedTo(current.filter(id => id !== m.userId).join(','));
-                            }
-                          }}
-                          className="w-3.5 h-3.5 rounded border-zinc-600 bg-zinc-800 text-indigo-500 focus:ring-indigo-500/20"
-                        />
-                        <span className="text-xs text-zinc-300 group-hover:text-white transition-colors">{m.user?.name || m.user?.email || "Unknown"}</span>
-                      </label>
-                    ))}
-                  </div>
+      {editing !== undefined && (
+        <WorkspaceDialog title={editing ? "Edit Task" : "New Task"} busy={isSaving} onDismiss={() => setEditing(undefined)}>
+          <form onSubmit={saveTask} className="space-y-4">
+            <fieldset disabled={isSaving} className="space-y-3">
+              <label className="block space-y-1 text-sm font-medium"><span>Task Title</span><input name="title" required defaultValue={editing?.title} className="workspace-input" /></label>
+              <label className="block space-y-1 text-sm font-medium"><span>Due Date (Optional)</span><input name="dueDate" type="date" defaultValue={editing?.dueDate?.slice(0, 10) ?? ""} className="workspace-input" /></label>
+              <fieldset className="rounded-lg border border-zinc-700 p-2">
+                <legend className="px-1 text-sm font-medium">Assign To (Optional)</legend>
+                <div className="max-h-44 overflow-y-auto">
+                  {members.length === 0 && <p className="p-2 text-sm text-zinc-400">No band members available.</p>}
+                  {members.map((member) => (
+                    <label key={member.userId} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-2 text-sm hover:bg-white/5">
+                      <input name="assignee" type="checkbox" value={member.userId} defaultChecked={taskAssigneeIds(editing?.assignedTo).includes(member.userId)} className="size-4 shrink-0 accent-indigo-500" />
+                      <span className="break-all">{memberNames.get(member.userId)}</span>
+                    </label>
+                  ))}
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-300 ml-1">Due Date</label>
-                  <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none [color-scheme:dark]" />
-                </div>
-              </div>
+              </fieldset>
+            </fieldset>
+            {formError && <p role="alert" className="text-sm text-red-300">{formError}</p>}
+            <div className="flex flex-wrap justify-end gap-2">
+              <button type="button" className="workspace-secondary" disabled={isSaving} onClick={() => setEditing(undefined)}>Cancel</button>
+              <button type="submit" className="workspace-primary" disabled={isSaving}>{isSaving ? "Saving…" : "Save Task"}</button>
+            </div>
+          </form>
+        </WorkspaceDialog>
+      )}
 
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 rounded-xl font-medium text-sm text-zinc-300 glass hover:bg-white/5 transition-colors">
-                  Cancel
-                </button>
-                <button type="submit" disabled={isSubmitting} className="flex-1 py-3 rounded-xl font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2">
-                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingTask ? "Update Task" : "Save Task")}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
+      {deleting && (
+        <WorkspaceDialog title="Delete Task?" busy={isSaving} onDismiss={() => setDeleting(undefined)}>
+          <p className="text-sm text-zinc-300">Remove <strong>{deleting.title}</strong> from the task board?</p>
+          {formError && <p role="alert" className="mt-3 text-sm text-red-300">{formError}</p>}
+          <div className="mt-4 flex flex-wrap justify-end gap-2">
+            <button type="button" className="workspace-secondary" disabled={isSaving} onClick={() => setDeleting(undefined)}>Cancel</button>
+            <button type="button" className="workspace-danger" disabled={isSaving} onClick={() => void deleteTask(deleting)}>{isSaving ? "Deleting…" : "Delete Task"}</button>
+          </div>
+        </WorkspaceDialog>
       )}
     </div>
   );

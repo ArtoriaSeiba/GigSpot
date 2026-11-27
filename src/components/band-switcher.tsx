@@ -1,35 +1,32 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
+import { bandRoleLabel } from "@/lib/utils";
 import { ChevronDown, Plus, Music2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { CreateBandForm } from "@/components/create-band-form";
 import { AnimatePresence, motion } from "framer-motion";
+import { switchActiveBand } from "@/lib/switch-active-band";
 
-export function BandSwitcher() {
-  const [memberships, setMemberships] = useState<any[]>([]);
-  const [activeBandId, setActiveBandId] = useState<string | null>(null);
+type Membership = {
+  band: { id: string; name: string; logoUrl: string | null };
+  bandRole: string;
+};
+
+export function BandSwitcher({ activeBandId }: { activeBandId: string | null }) {
+  const [memberships, setMemberships] = useState<Membership[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isCreateBandOpen, setIsCreateBandOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const optionsId = useId();
 
   useEffect(() => {
-    // Get active band from cookie
-    const match = document.cookie.match(new RegExp('(^| )activeBandId=([^;]+)'));
-    if (match) setActiveBandId(match[2]);
-
     fetch("/api/band/my-bands")
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
           setMemberships(data);
-          
-          // If no active band is set, but we have bands, set the first one
-          if (!match && data.length > 0) {
-            switchBand(data[0].band.id);
-          }
         }
         setIsLoading(false);
       })
@@ -46,18 +43,9 @@ export function BandSwitcher() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const switchBand = (bandId: string) => {
-    document.cookie = `activeBandId=${bandId}; path=/; max-age=31536000`; // 1 year
-    setActiveBandId(bandId);
-    setIsOpen(false);
-    
-    // Refresh the page to reload context
-    window.location.href = "/dashboard";
-  };
-
   if (isLoading) {
     return (
-      <div className="relative mt-2">
+      <div className="relative" aria-hidden="true">
         <div className="w-full flex items-center justify-between px-3 py-2 bg-white/5 border border-zinc-800/50 rounded-xl">
           <div className="flex items-center gap-3 w-full">
             <div className="w-8 h-8 rounded-lg bg-zinc-800/50 animate-pulse shrink-0" />
@@ -77,15 +65,29 @@ export function BandSwitcher() {
   if (!activeMembership) return null;
 
   return (
-    <div className="relative mt-2" ref={dropdownRef}>
+    <div
+      className="relative"
+      ref={dropdownRef}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && isOpen) {
+          setIsOpen(false);
+          triggerRef.current?.focus();
+        }
+      }}
+    >
       <button 
+        ref={triggerRef}
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-white/5 hover:bg-white/10 border border-zinc-800 rounded-xl transition-colors"
+        aria-label={`Switch band. Current band: ${activeMembership.band.name}`}
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? optionsId : undefined}
+        className="flex min-h-11 w-full items-center justify-between gap-1 rounded-lg border border-zinc-800 bg-white/5 px-2 py-1.5 transition-colors hover:bg-white/10 xl:px-3"
       >
         <div className="flex items-center gap-3 overflow-hidden">
           {activeMembership.band.logoUrl ? (
              <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
-               <img src={activeMembership.band.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+               <img src={activeMembership.band.logoUrl} alt="" className="w-full h-full object-cover" />
              </div>
           ) : (
             <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
@@ -93,26 +95,26 @@ export function BandSwitcher() {
             </div>
           )}
           <div className="flex flex-col items-start truncate text-left">
-            <span className="text-sm font-bold text-white truncate">{activeMembership.band.name}</span>
-            <span className="text-[10px] text-zinc-500 uppercase tracking-widest">{activeMembership.bandRole}</span>
+            <span className="max-w-full truncate text-sm font-semibold text-white">{activeMembership.band.name}</span>
+            <span className="text-[10px] text-zinc-400">{bandRoleLabel(activeMembership.bandRole)}</span>
           </div>
         </div>
-        <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown aria-hidden="true" className={`size-4 shrink-0 text-zinc-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl z-50">
+        <div id={optionsId} className="absolute right-0 top-full z-50 mt-2 w-full min-w-48 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-xl">
           <div className="max-h-64 overflow-y-auto">
             {memberships.map((m) => (
               <button
                 key={m.band.id}
-                onClick={() => switchBand(m.band.id)}
+                onClick={() => switchActiveBand(m.band.id)}
                 className={`w-full flex flex-col items-start px-4 py-3 hover:bg-white/5 transition-colors ${
-                  activeBandId === m.band.id ? "bg-white/5 border-l-2 border-indigo-500" : "border-l-2 border-transparent"
+                  activeMembership.band.id === m.band.id ? "bg-white/5 border-l-2 border-indigo-500" : "border-l-2 border-transparent"
                 }`}
               >
                 <span className="text-sm font-bold text-white">{m.band.name}</span>
-                <span className="text-xs text-zinc-500">{m.bandRole}</span>
+                <span className="text-xs text-zinc-500">{bandRoleLabel(m.bandRole)}</span>
               </button>
             ))}
           </div>

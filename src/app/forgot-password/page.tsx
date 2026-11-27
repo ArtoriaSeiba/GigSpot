@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
         setIsSuccess(true);
         // Automatically open the Ethereal email preview if provided (for local testing only)
         if (data.previewUrl) {
-          toast.success("Check console for the Ethereal Email Preview URL!");
+          toast.success("Check the console for the Ethereal email preview URL!");
           console.log("ETHEREAL EMAIL PREVIEW URL:", data.previewUrl);
           // Optional: window.open(data.previewUrl, "_blank");
         } else {
@@ -45,14 +45,14 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="workspace-shell min-h-screen flex items-center justify-center p-4">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none" />
       
       <div className="w-full max-w-md relative z-10">
         <div className="glass-card rounded-3xl p-8 shadow-2xl">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent mb-2">
+            <h1 className="mb-2 text-3xl font-bold tracking-tight text-white">
               Forgot Password
             </h1>
             <p className="text-sm text-zinc-400">Enter your email to receive a reset link.</p>
@@ -75,7 +75,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={isLoading || !email}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium text-sm transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
+                className="workspace-primary mt-4 w-full sm:w-full"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 {isLoading ? "Sending..." : "Send Reset Link"}
@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
           <div className="mt-8 text-center">
             <Link href="/login" className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors">
               <ArrowLeft className="w-4 h-4" />
-              Back to Login
+              Back To Login
             </Link>
           </div>
         </div>

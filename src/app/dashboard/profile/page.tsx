@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { bandRoleLabel } from "@/lib/utils";
 import { User, Mail, CalendarDays, Loader2, Save, Camera, Phone, FileText, Music2, Trash2, Image as ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -130,7 +131,7 @@ export default function ProfilePage() {
             </div>
           </div>
           
-          {/* My Bands Skeleton */}
+          {/* My bands Skeleton */}
           <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-zinc-800/50">
             <div className="h-7 bg-zinc-800/50 rounded-lg w-32 mb-6"></div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -146,9 +147,11 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in relative px-2 pb-24">
-      <header className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">My Profile</h1>
-        <p className="text-zinc-400 text-sm">Manage your personal settings, identity, and availability.</p>
+      <header className="workspace-header">
+        <div>
+          <h1>My Profile</h1>
+          <p>Manage your personal settings, identity, and availability.</p>
+        </div>
       </header>
 
       <form onSubmit={handleSave} className="space-y-16 mt-8">
@@ -161,7 +164,7 @@ export default function ProfilePage() {
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-zinc-600">
                 <ImageIcon className="w-12 h-12 mb-2 opacity-50" />
-                <span className="text-sm font-medium">No cover photo</span>
+                <span className="text-sm font-medium">No Cover Photo</span>
               </div>
             )}
             
@@ -211,7 +214,7 @@ export default function ProfilePage() {
           <h3 className="text-xl font-bold text-white mb-6">Basic Information</h3>
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Full Name</label>
+              <label className="text-xs font-bold text-zinc-500 ml-1">Full Name</label>
               <input 
                 type="text" 
                 value={name} 
@@ -222,7 +225,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Email Address</label>
+              <label className="text-xs font-bold text-zinc-500 ml-1">Email Address</label>
               <input 
                 type="email" 
                 value={email} 
@@ -239,7 +242,7 @@ export default function ProfilePage() {
           <h3 className="text-xl font-bold text-white mb-6">Contact & Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+              <label className="text-xs font-bold text-zinc-500 ml-1 flex items-center gap-2">
                 <Phone className="w-4 h-4 text-indigo-400" /> Phone Number
               </label>
               <input 
@@ -252,7 +255,7 @@ export default function ProfilePage() {
             </div>
             
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+              <label className="text-xs font-bold text-zinc-500 ml-1 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-indigo-400" /> Short Bio
               </label>
               <input 
@@ -265,7 +268,7 @@ export default function ProfilePage() {
             </div>
             
             <div className="space-y-2 md:col-span-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+              <label className="text-xs font-bold text-zinc-500 ml-1 flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-emerald-400" /> My Availability Notes
               </label>
               <textarea 
@@ -279,7 +282,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* My Bands */}
+        {/* My bands */}
         <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-zinc-800">
           <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
             <Music2 className="w-5 h-5 text-cyan-400" /> My Bands
@@ -293,7 +296,7 @@ export default function ProfilePage() {
               {bands.map((b: any) => (
                 <div key={b.bandId} className="bg-zinc-900/50 hover:bg-zinc-900 rounded-2xl p-5 flex flex-col border border-zinc-800/50 transition-colors">
                   <span className="font-bold text-white text-lg">{b.band.name}</span>
-                  <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest mt-2">{b.bandRole}</span>
+                  <span className="text-xs font-bold text-indigo-400 mt-2">{bandRoleLabel(b.bandRole)}</span>
                 </div>
               ))}
             </div>
@@ -303,7 +306,7 @@ export default function ProfilePage() {
         <div className="flex justify-end pt-4">
           <button 
             type="submit" disabled={isSaving} 
-            className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/20 flex items-center gap-3 disabled:opacity-50 hover:scale-105 active:scale-95"
+            className="workspace-primary"
           >
             {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
             Save Profile Changes

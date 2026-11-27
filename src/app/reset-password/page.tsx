@@ -68,8 +68,8 @@ function ResetPasswordForm() {
         </div>
         <h2 className="text-2xl font-bold text-white">Password Updated!</h2>
         <p className="text-zinc-400 text-sm">Your password has been successfully reset. You can now log in with your new password.</p>
-        <Link href="/login" className="inline-block mt-4 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors">
-          Go to Login
+        <Link href="/login" className="workspace-primary mt-4">
+          Go To Login
         </Link>
       </div>
     );
@@ -81,7 +81,7 @@ function ResetPasswordForm() {
         <h2 className="text-xl font-bold text-red-400">Invalid Link</h2>
         <p className="text-sm text-zinc-400">This password reset link is invalid or has expired.</p>
         <Link href="/forgot-password" className="inline-block mt-4 text-indigo-400 hover:text-indigo-300 font-medium">
-          Request a new link
+          Request A New Link
         </Link>
       </div>
     );
@@ -90,7 +90,7 @@ function ResetPasswordForm() {
   return (
     <div className="p-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent mb-2">
+        <h1 className="mb-2 text-3xl font-bold tracking-tight text-white">
           Reset Password
         </h1>
         <p className="text-sm text-zinc-400">Enter your new password below.</p>
@@ -142,7 +142,7 @@ function ResetPasswordForm() {
         <button
           type="submit"
           disabled={isLoading || !password || !confirmPassword}
-          className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium text-sm transition-colors flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
+          className="workspace-primary mt-4 w-full sm:w-full"
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
           {isLoading ? "Saving..." : "Update Password"}
@@ -154,7 +154,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="workspace-shell min-h-screen flex items-center justify-center p-4">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none" />
       

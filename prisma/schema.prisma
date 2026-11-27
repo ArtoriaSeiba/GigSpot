@@ -30,6 +30,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   bandMembers   BandMember[]
+  acceptedBandLinks BandLinkInvite[]
   notifications Notification[]
   gigSyncs      GigSync[]
 }
@@ -91,6 +92,7 @@ model Band {
   repertoire  Song[]
   gear        Gear[]
   invites     BandInvite[]
+  linkInvites BandLinkInvite[]
   finances    FinanceTransaction[]
   tasks       Task[]
 }
@@ -150,6 +152,16 @@ model Song {
   artist        String?
   key           String?
   tempo         Int?
+  originalKey   String?
+  originalTempo Int?
+  chartKey      String?
+  chordChart    String?       @db.Text
+  rehearsalNotes String?     @db.Text
+  tuning        String?
+  capo          Int?
+  recordingAlbum String?
+  recordingYear Int?
+  recordingDuration Int?
   arSpatialData String?       @db.Text
   bandId        String
   createdAt     DateTime      @default(now())
@@ -201,6 +213,23 @@ model BandInvite {
 
   @@unique([email, bandId])
   @@index([bandId])
+}
+
+model BandLinkInvite {
+  id           String    @id @default(cuid())
+  token        String    @unique @db.VarChar(64)
+  bandId       String
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  acceptedById String?
+  revokedAt    DateTime?
+
+  band       Band  @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  acceptedBy User? @relation(fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@index([bandId, createdAt])
+  @@index([acceptedById])
 }
 
 model FinanceTransaction {

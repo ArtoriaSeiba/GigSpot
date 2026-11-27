@@ -214,7 +214,7 @@ export default function BandProfilePage() {
             </div>
           </div>
 
-          {/* Social Links Skeleton */}
+          {/* Social links Skeleton */}
           <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-zinc-800/50">
             <div className="h-7 bg-zinc-800/50 rounded-lg w-40 mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -233,9 +233,11 @@ export default function BandProfilePage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in relative px-2 pb-24">
-      <header className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">Band Profile</h1>
-        <p className="text-zinc-400 text-sm">Manage your band's identity, images, and public presence.</p>
+      <header className="workspace-header">
+        <div>
+          <h1>Band Profile</h1>
+          <p>Manage your band&apos;s identity, images, and public presence.</p>
+        </div>
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-8 mt-8">
@@ -248,7 +250,7 @@ export default function BandProfilePage() {
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-zinc-600">
                 <ImageIcon className="w-12 h-12 mb-2 opacity-50" />
-                <span className="text-sm font-medium">No cover photo</span>
+                <span className="text-sm font-medium">No Cover Photo</span>
               </div>
             )}
             {role === "ADMIN" && (
@@ -300,7 +302,7 @@ export default function BandProfilePage() {
           <h3 className="text-xl font-bold text-white mb-6">Basic Information</h3>
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Band Name</label>
+              <label className="text-xs font-bold text-zinc-500 ml-1">Band Name</label>
               <input 
                 type="text" required disabled={role !== "ADMIN"}
                 value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
@@ -308,7 +310,7 @@ export default function BandProfilePage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Bio / Description</label>
+              <label className="text-xs font-bold text-zinc-500 ml-1">Bio / Description</label>
               <textarea 
                 rows={4} disabled={role !== "ADMIN"}
                 value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
@@ -317,7 +319,7 @@ export default function BandProfilePage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Location</label>
+                <label className="text-xs font-bold text-zinc-500 ml-1">Location</label>
                 <input 
                   type="text" placeholder="e.g. Los Angeles, CA" disabled={role !== "ADMIN"}
                   value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})}
@@ -325,7 +327,7 @@ export default function BandProfilePage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Genres</label>
+                <label className="text-xs font-bold text-zinc-500 ml-1">Genres</label>
                 <input 
                   type="text" placeholder="e.g. Rock, Alternative" disabled={role !== "ADMIN"}
                   value={formData.genres} onChange={e => setFormData({...formData, genres: e.target.value})}
@@ -336,12 +338,12 @@ export default function BandProfilePage() {
           </div>
         </div>
 
-        {/* Social Links */}
+        {/* Social links */}
         <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-zinc-800">
           <h3 className="text-xl font-bold text-white mb-6">Social Links</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Instagram URL</label>
+              <label className="text-xs font-bold text-zinc-500 ml-1">Instagram URL</label>
               <input 
                 type="url" placeholder="https://instagram.com/..." disabled={role !== "ADMIN"}
                 value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})}
@@ -349,7 +351,7 @@ export default function BandProfilePage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Spotify Artist URL</label>
+              <label className="text-xs font-bold text-zinc-500 ml-1">Spotify Artist URL</label>
               <input 
                 type="url" placeholder="https://open.spotify.com/artist/..." disabled={role !== "ADMIN"}
                 value={formData.spotify} onChange={e => setFormData({...formData, spotify: e.target.value})}
@@ -357,7 +359,7 @@ export default function BandProfilePage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">YouTube Channel URL</label>
+              <label className="text-xs font-bold text-zinc-500 ml-1">YouTube Channel URL</label>
               <input 
                 type="url" placeholder="https://youtube.com/..." disabled={role !== "ADMIN"}
                 value={formData.youtube} onChange={e => setFormData({...formData, youtube: e.target.value})}
@@ -365,7 +367,7 @@ export default function BandProfilePage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Website URL</label>
+              <label className="text-xs font-bold text-zinc-500 ml-1">Website URL</label>
               <input 
                 type="url" placeholder="https://yourband.com" disabled={role !== "ADMIN"}
                 value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})}
@@ -379,7 +381,7 @@ export default function BandProfilePage() {
           <div className="flex justify-end">
             <button 
               type="submit" disabled={isSaving} 
-              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/20 flex items-center gap-3 disabled:opacity-50 hover:scale-105 active:scale-95"
+              className="workspace-primary"
             >
               {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
               Save Profile Changes
@@ -427,14 +429,14 @@ export default function BandProfilePage() {
                 <div className="w-16 h-16 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center mb-6 mx-auto">
                   <AlertTriangle className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2 text-center">Are you absolutely sure?</h3>
+                <h3 className="text-2xl font-bold text-white mb-2 text-center">Are You Absolutely Sure?</h3>
                 <p className="text-zinc-400 text-center mb-6 text-sm">
                   This action cannot be undone. This will permanently delete the <strong>{formData.name}</strong> band and remove all associated data.
                 </p>
                 
                 <div className="space-y-4 mb-8">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Type Band Name to confirm</label>
+                    <label className="text-xs font-bold text-zinc-500 ml-1">Type The Band Name To Confirm</label>
                     <input 
                       type="text" required placeholder={formData.name}
                       value={confirmBandName} onChange={e => setConfirmBandName(e.target.value)}
@@ -442,7 +444,7 @@ export default function BandProfilePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Your Password</label>
+                    <label className="text-xs font-bold text-zinc-500 ml-1">Your Password</label>
                     <input 
                       type="password" required placeholder="Enter password to confirm"
                       value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}

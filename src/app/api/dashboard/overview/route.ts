@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type Prisma } from "@prisma/client";
 import { getBandContext } from "@/lib/band-context";
+import { taskAssigneeIds } from "@/lib/utils";
 
 const prisma = new PrismaClient();
+type OverviewGig = Prisma.GigGetPayload<{ include: { band: { select: { name: true } } } }>;
+type RecentTask = Prisma.TaskGetPayload<{ include: { band: { select: { name: true } } } }> & { assignedName: string | null };
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -33,26 +36,29 @@ export async function GET() {
   const bandIds = myBands.map(b => b.bandId);
   const hasBand = bandIds.length > 0;
 
-  // Aggregate Data for Active Band Only
-  let nextGigs: any[] = [];
-  let recentTasks: any[] = [];
-  let totalStats = { members: 0, songs: 0, gear: 0 };
+  let nextGigs: OverviewGig[] = [];
+  let recentTasks: RecentTask[] = [];
+  const totalStats = { members: 0, songs: 0, gear: 0 };
 
   const activeContext = await getBandContext(userId);
-  const activeBandId = activeContext?.bandId;
 
-  if (activeBandId) {
+  if (activeContext) {
+    const activeBandId = activeContext.bandId;
+    const isBandAdmin = activeContext.bandRole === "ADMIN";
     nextGigs = await prisma.gig.findMany({
-      where: { bandId: { in: bandIds }, date: { gte: new Date(new Date().setHours(0,0,0,0)) } },
+      where: { bandId: { in: bandIds }, date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
       orderBy: { date: "asc" },
       take: 5,
       include: { band: { select: { name: true } } }
     });
 
-    recentTasks = await prisma.task.findMany({
-      where: { bandId: activeBandId, status: { not: "COMPLETED" } },
-      orderBy: { createdAt: "desc" },
-      take: 5,
+    const openTasks = await prisma.task.findMany({
+      where: {
+        bandId: activeBandId,
+        status: { not: "COMPLETED" },
+        ...(isBandAdmin ? {} : { assignedTo: { contains: userId } }),
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       include: { band: { select: { name: true } } }
     });
 
@@ -63,11 +69,14 @@ export async function GET() {
     });
     totalStats.members = uniqueMembers.length;
 
-    recentTasks = recentTasks.map(task => {
+    const visibleTasks = isBandAdmin
+      ? openTasks
+      : openTasks.filter((task) => taskAssigneeIds(task.assignedTo).includes(userId));
+    recentTasks = visibleTasks.map(task => {
       let assignedNames = null;
       if (task.assignedTo) {
-        assignedNames = task.assignedTo.split(',').map((id: string) => {
-          const member = uniqueMembers.find(m => m.userId === id.trim());
+        assignedNames = taskAssigneeIds(task.assignedTo).map((id) => {
+          const member = uniqueMembers.find(m => m.userId === id);
           return member?.user?.name || "Unknown User";
         }).join(', ');
       }

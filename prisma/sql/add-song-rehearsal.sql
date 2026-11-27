@@ -1,0 +1,8 @@
+ALTER TABLE `Song`
+  ADD COLUMN `originalKey` VARCHAR(191) NULL,
+  ADD COLUMN `originalTempo` INT NULL,
+  ADD COLUMN `chartKey` VARCHAR(191) NULL,
+  ADD COLUMN `chordChart` TEXT NULL,
+  ADD COLUMN `rehearsalNotes` TEXT NULL,
+  ADD COLUMN `tuning` VARCHAR(191) NULL,
+  ADD COLUMN `capo` INT NULL;

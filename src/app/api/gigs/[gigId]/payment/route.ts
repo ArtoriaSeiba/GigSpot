@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { getBandContext } from "@/lib/band-context";
+import { notifyBandMembers } from "@/lib/notifications";
 
 const prisma = new PrismaClient();
 
@@ -69,6 +70,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ gigId: 
         amount: gig.income,
         description: `[GIG_PAYMENT:${gigId}] Payment received for gig: ${gig.title}`
       }
+    });
+
+    await notifyBandMembers({
+      bandId: bandMember.bandId,
+      excludeUserId: session.user.id,
+      title: "Gig Payout Logged",
+      message: `$${gig.income} income recorded for ${gig.title}.`
     });
 
     return NextResponse.json({ success: true, transaction });

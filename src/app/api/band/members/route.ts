@@ -16,7 +16,7 @@ export async function GET() {
 
   const members = await prisma.bandMember.findMany({
     where: { bandId: bandMember.bandId },
-    include: { user: { select: { id: true, name: true, email: true, role: true } } }
+    include: { user: { select: { id: true, name: true, email: true, phone: true, role: true } } }
   });
 
   let pendingInvites: any[] = [];

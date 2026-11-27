@@ -16,6 +16,23 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Repertoire And Rehearsal
+
+For an existing MySQL database, apply the additive song columns once and regenerate Prisma Client, then restart the app.
+
+```sh
+npx prisma db execute --schema prisma/schema.prisma --file prisma/sql/add-song-rehearsal.sql
+npx prisma db execute --schema prisma/schema.prisma --file prisma/sql/add-song-recording-metadata.sql
+npx prisma generate
+```
+
+In **Repertoire → Add Song**, type a title and choose a recording from the iTunes catalog to fill the title, artist, album, year, and duration when available. The catalog uses Malaysia by default. Set `SONG_CATALOG_COUNTRY` to a two-letter country code to use another storefront. Use **Add Manually** for songs outside the catalog.
+
+Open **Arrangement, Chart & Notes** to paste a chart, import a ChordPro or plain-text file, or change the band key and tempo. The chart preview uses the key of the written chord shapes and the band key to transpose chord symbols, including slash bass notes. It preserves the source chart, notes, and BPM separately. An imported capo is a reference to the written arrangement. Band members can read the chart and notes in Repertoire, from the gig setlist, or in Rehearsal.
+
+- Set the server-side `GETSONGBPM_API_KEY` to look up the original key and BPM automatically when an admin selects a recording. The app checks the title, artist, and version and leaves unknown values blank. The editor links back to the provider for attribution. [GetSongBPM API](https://getsongbpm.com/api)
+- To enable optional, usage-billed audio analysis, set `MUSIC_AI_API_KEY` and `MUSIC_AI_WORKFLOW` to the secret and the slug of a published workflow using the Chords and Beats modules. Name its input `inputFileUrl`, or set `MUSIC_AI_INPUT_NAME` to the workflow’s input name. Expose outputs named `key`, `bpm`, and `chordMap`. Use Music AI’s managed storage for the signed upload and chord map. The app takes a recording up to 20 MB, subject to your host’s own request limit. Results land in an editable draft for the admin to review and save. [Music AI Workflow](https://music.ai/workflows/transcription-and-alignment/chords-and-beat-mapping/) [Pricing](https://music.ai/pricing/)
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

@@ -1,355 +1,210 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Music, Plus, Loader2, X, Music4, Edit2, Trash2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Guitar, Music, NotebookPen, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
+import toast from "react-hot-toast";
+import { WorkspaceDialog } from "@/components/workspace-dialog";
+import { SongRehearsalDetails } from "@/components/song-rehearsal-details";
+import { matchesSongSearch, workspaceErrorMessage, workspaceMutation, workspaceRequest, type BandRole } from "@/lib/workspace-requests";
+import { SongEditor, type RepertoireSong as Song, type SongDraft } from "./song-editor";
 
-type Song = {
-  id: string;
-  title: string;
-  artist: string | null;
-  key: string | null;
-  tempo: number | null;
-};
+type Library =
+  | { status: "loading" | "error" | "no-band" }
+  | { status: "ready"; songs: Song[]; isAdmin: boolean };
 
 export default function RepertoirePage() {
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSong, setEditingSong] = useState<Song | null>(null);
-
-  // Form State
-  const [title, setTitle] = useState("");
-  const [artist, setArtist] = useState("");
-  const [songKey, setSongKey] = useState("");
-  const [tempo, setTempo] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [bandRole, setBandRole] = useState("MUSICIAN");
-
-  const openModal = (song?: Song) => {
-    if (song) {
-      setEditingSong(song);
-      setTitle(song.title);
-      setArtist(song.artist || "");
-      setSongKey(song.key || "");
-      setTempo(song.tempo ? song.tempo.toString() : "");
-    } else {
-      setEditingSong(null);
-      setTitle("");
-      setArtist("");
-      setSongKey("");
-      setTempo("");
-    }
-    setIsModalOpen(true);
-  };
-
-  const fetchSongs = async () => {
-    try {
-      const roleRes = await fetch("/api/band/role");
-      if (roleRes.ok) {
-        const { role } = await roleRes.json();
-        setBandRole(role);
-      }
-      
-      const res = await fetch("/api/songs");
-      const data = await res.json();
-      setSongs(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [library, setLibrary] = useState<Library>({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
+  const [query, setQuery] = useState("");
+  const [editing, setEditing] = useState<Song | null>();
+  const [viewing, setViewing] = useState<Song>();
+  const [deleting, setDeleting] = useState<Song>();
+  const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
-    fetchSongs();
-  }, []);
+    const controller = new AbortController();
+    const options = { signal: controller.signal };
 
-  const handleAddSong = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      const url = "/api/songs";
-      const method = editingSong ? "PUT" : "POST";
-      const body = editingSong
-        ? JSON.stringify({ id: editingSong.id, title, artist, key: songKey, tempo })
-        : JSON.stringify({ title, artist, key: songKey, tempo });
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body,
-      });
-      if (res.ok) {
-        setIsModalOpen(false);
-        fetchSongs();
+    async function load() {
+      try {
+        const band = await workspaceRequest<BandRole>("/api/band/role", "Could not load your band.", options);
+        if (!band.bandId) {
+          if (!controller.signal.aborted) setLibrary({ status: "no-band" });
+          return;
+        }
+        const songs = await workspaceRequest<Song[]>("/api/songs", "Could not load songs.", options);
+        if (!controller.signal.aborted) setLibrary({ status: "ready", songs, isAdmin: band.role === "ADMIN" });
+      } catch {
+        if (!controller.signal.aborted) setLibrary({ status: "error" });
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsSubmitting(false);
     }
-  };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this song from repertoire? It will be removed from all setlists.")) return;
-    try {
-      const res = await fetch("/api/songs", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
-      });
-      if (res.ok) fetchSongs();
-    } catch (e) {
-      console.error(e);
+    void load();
+    return () => controller.abort();
+  }, [attempt]);
+
+  const isAdmin = library.status === "ready" && library.isAdmin;
+  const songs = library.status === "ready" ? library.songs : [];
+  const results = songs.filter((song) => matchesSongSearch(song, query));
+
+  function openEditor(song: Song | null) {
+    setFormError("");
+    setEditing(song);
+  }
+
+  async function saveSong(draft: SongDraft) {
+    if (isSaving) return;
+    if (!draft.title.trim()) {
+      setFormError("Enter a song title.");
+      return;
     }
-  };
+
+    setIsSaving(true);
+    setFormError("");
+    try {
+      const song = await workspaceMutation<Song>("/api/songs", editing ? "PUT" : "POST", {
+        ...(editing && { id: editing.id }),
+        ...draft,
+      }, "Could not save the song. Please try again.");
+      setLibrary((current) => current.status === "ready" ? {
+        ...current,
+        songs: [...current.songs.filter((item) => item.id !== song.id), song].sort((a, b) => a.title.localeCompare(b.title)),
+      } : current);
+      toast.success(editing ? "Song updated." : "Song added.");
+      setEditing(undefined);
+    } catch (error) {
+      const message = workspaceErrorMessage(error, "Could not save the song. Please try again.");
+      setFormError(message);
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function deleteSong(song: Song) {
+    if (isSaving) return;
+    setIsSaving(true);
+    setFormError("");
+    try {
+      await workspaceMutation("/api/songs", "DELETE", { id: song.id }, "Could not delete the song.");
+      setLibrary((current) => current.status === "ready" ? {
+        ...current,
+        songs: current.songs.filter((item) => item.id !== song.id),
+      } : current);
+      setDeleting(undefined);
+      toast.success("Song deleted.");
+    } catch (error) {
+      const message = workspaceErrorMessage(error, "Could not delete the song. Please try again.");
+      setFormError(message);
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in relative">
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
+    <div className="space-y-6">
+      <header className="workspace-header">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2">Master Repertoire</h1>
-          <p className="hidden lg:block text-zinc-400 text-sm">Manage your master song list and AR tracking data.</p>
+          <h1>Repertoire</h1>
+          <p>Browse your band’s songs, keys, and tempos.</p>
         </div>
-        {bandRole === "ADMIN" && (
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => openModal()}
-            className="w-full lg:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
-          >
-            <Plus className="w-5 h-5" />
-            Add Song
-          </motion.button>
-        )}
+        {isAdmin && <button type="button" className="workspace-primary shrink-0" onClick={() => openEditor(null)}><Plus aria-hidden="true" className="size-5" /> Add Song</button>}
       </header>
 
-      {isLoading ? (
-        <div className="glass-card rounded-3xl p-6 mt-8 animate-pulse">
-          {/* Desktop Table Skeleton */}
-          <div className="hidden lg:block overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-zinc-800/50">
-                  <th className="pb-4 pl-2"><div className="h-4 w-20 bg-zinc-800/50 rounded"></div></th>
-                  <th className="pb-4"><div className="h-4 w-16 bg-zinc-800/50 rounded"></div></th>
-                  <th className="pb-4"><div className="h-4 w-12 bg-zinc-800/50 rounded"></div></th>
-                  <th className="pb-4"><div className="h-4 w-24 bg-zinc-800/50 rounded"></div></th>
-                  <th className="pb-4 pr-2"><div className="h-4 w-16 bg-zinc-800/50 rounded ml-auto"></div></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800/30">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <tr key={i}>
-                    <td className="py-4 pl-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-zinc-800/50 shrink-0"></div>
-                        <div className="h-4 w-32 bg-zinc-800/30 rounded"></div>
-                      </div>
-                    </td>
-                    <td className="py-4"><div className="h-4 w-24 bg-zinc-800/30 rounded"></div></td>
-                    <td className="py-4"><div className="h-4 w-12 bg-zinc-800/30 rounded"></div></td>
-                    <td className="py-4"><div className="h-4 w-10 bg-zinc-800/30 rounded"></div></td>
-                    <td className="py-4 pr-2"><div className="h-8 w-24 bg-zinc-800/30 rounded-full ml-auto"></div></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <section className="workspace-panel space-y-4" aria-label="Band Songs">
+        {library.status === "loading" && <p role="status" className="text-sm text-zinc-400">Loading Repertoire…</p>}
+        {library.status === "error" && (
+          <>
+            <p role="alert">Could not load your repertoire.</p>
+            <button type="button" className="workspace-secondary" onClick={() => {
+              setLibrary({ status: "loading" });
+              setAttempt((value) => value + 1);
+            }}>Try Again</button>
+          </>
+        )}
+        {library.status === "no-band" && (
+          <>
+            <h2 className="font-semibold">Join Or Create A Band To Use The Repertoire</h2>
+            <Link href="/dashboard" className="workspace-secondary">Go To Dashboard</Link>
+          </>
+        )}
+        {library.status === "ready" && songs.length === 0 && (
+          <div className="space-y-2 py-6 text-center">
+            <Music aria-hidden="true" className="mx-auto size-8 text-indigo-300" />
+            <h2 className="text-lg font-semibold">No Songs Yet</h2>
+            <p className="text-sm text-zinc-400">{isAdmin ? "Add a song to start your band’s repertoire." : "Songs will appear here when a band admin adds them."}</p>
           </div>
-          {/* Mobile Cards Skeleton */}
-          <div className="lg:hidden space-y-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="glass-card rounded-2xl p-4 border border-zinc-800/50">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-zinc-800/50 shrink-0"></div>
-                  <div className="flex-1 space-y-2">
-                    <div className="h-5 w-3/4 bg-zinc-800/30 rounded"></div>
-                    <div className="h-3 w-1/2 bg-zinc-800/30 rounded"></div>
+        )}
+        {songs.length > 0 && (
+          <>
+            <label className="grid max-w-sm gap-2 text-sm font-medium">
+              <span>Find A Song</span>
+              <span className="relative block">
+                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-3.5 size-4 text-zinc-400" />
+                <input className="workspace-input pl-9" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Title or artist" />
+              </span>
+            </label>
+            <p role="status" className="text-sm text-zinc-400">{results.length} {results.length === 1 ? "song" : "songs"}{query.trim() && ` of ${songs.length}`}</p>
+            {results.length === 0 && <p className="text-sm text-zinc-300">No matching songs. Try another title or artist.</p>}
+            <ul className="divide-y divide-zinc-800">
+              {results.map((song) => (
+                <li key={song.id} className="grid gap-2 px-2 py-3 transition-colors hover:bg-violet-400/5 sm:grid-cols-[minmax(0,1fr)_minmax(7rem,auto)_auto] sm:items-center sm:gap-4">
+                  <div className="min-w-0">
+                    <p className="break-words font-semibold">{song.title}</p>
+                    {song.artist && <p className="break-words text-sm text-zinc-400">{song.artist}</p>}
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="bg-black/10 rounded-xl p-3 h-14 border border-zinc-800/30"></div>
-                  <div className="bg-black/10 rounded-xl p-3 h-14 border border-zinc-800/30"></div>
-                </div>
-                <div className="border-t border-zinc-800/30 pt-4 mt-2">
-                  <div className="h-10 w-full bg-zinc-800/30 rounded-xl"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="glass-card rounded-3xl p-6">
-          {songs.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-zinc-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-zinc-800">
-                <Music className="w-8 h-8 text-zinc-500" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Your repertoire is empty</h3>
-              <p className="text-zinc-400">Add some songs to start building your master setlist.</p>
-            </div>
-          ) : (
-            <>
-              {/* Desktop Table */}
-              <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
-                    <th className="pb-4 font-medium pl-2">Title</th>
-                    <th className="pb-4 font-medium">Artist</th>
-                    <th className="pb-4 font-medium">Key</th>
-                    <th className="pb-4 font-medium">Tempo (BPM)</th>
-                    <th className="pb-4 font-medium text-right pr-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800/50">
-                  <AnimatePresence>
-                    {songs.map((song) => (
-                      <motion.tr 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        key={song.id} 
-                        className="hover:bg-white/5 transition-colors group"
-                      >
-                        <td className="py-4 pl-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                              <Music4 className="w-4 h-4 text-indigo-400" />
-                            </div>
-                            <span className="font-bold text-zinc-200">{song.title}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 text-zinc-400">{song.artist || "-"}</td>
-                        <td className="py-4 text-zinc-400">
-                          {song.key ? <span className="px-2 py-1 rounded bg-zinc-800 text-xs font-mono">{song.key}</span> : "-"}
-                        </td>
-                        <td className="py-4 text-zinc-400">{song.tempo || "-"}</td>
-                        <td className="py-4 text-right pr-2">
-                          <div className="flex items-center justify-end gap-3 transition-opacity">
-                            <Link href={`/dashboard/rehearse/${song.id}`} className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-wider bg-cyan-500/10 px-3 py-1.5 rounded-full border border-cyan-500/20">
-                              Launch AR
-                            </Link>
-                            {bandRole === "ADMIN" && (
-                              <>
-                                <button onClick={() => openModal(song)} className="text-zinc-500 hover:text-indigo-400 p-1"><Edit2 className="w-4 h-4" /></button>
-                                <button onClick={() => handleDelete(song.id)} className="text-zinc-500 hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                </tbody>
-              </table>
-            </div>
+                  <p className="flex flex-wrap gap-x-3 text-sm text-zinc-300">
+                    {song.key && <span>Band Key {song.key}</span>}
+                    {song.tempo !== null && <span>{song.tempo} BPM</span>}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-1">
+                    <button type="button" className="workspace-secondary" aria-label={`Rehearsal Notes for ${song.title}`} onClick={() => setViewing(song)}>
+                      <NotebookPen aria-hidden="true" className="size-4" /> Rehearsal Notes
+                    </button>
+                    <Link href={`/dashboard/rehearse/${song.id}`} aria-label={`Launch AR from ${song.title}`} className="workspace-secondary">
+                      <Guitar aria-hidden="true" className="size-4" /> Launch AR
+                    </Link>
+                    {isAdmin && (
+                      <>
+                        <button type="button" className="workspace-icon-button" aria-label={`Edit ${song.title}`} onClick={() => openEditor(song)}><Pencil aria-hidden="true" className="size-4" /></button>
+                        <button type="button" className="workspace-icon-button hover:text-red-300" aria-label={`Delete ${song.title}`} onClick={() => {
+                          setFormError("");
+                          setDeleting(song);
+                        }}><Trash2 aria-hidden="true" className="size-4" /></button>
+                      </>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </section>
 
-            {/* Mobile Cards */}
-            <div className="lg:hidden space-y-4">
-              <AnimatePresence>
-                {songs.map((song) => (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    key={song.id} 
-                    className="glass-card rounded-2xl p-4 border border-zinc-800/80 bg-zinc-900/30"
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shrink-0">
-                        <Music4 className="w-5 h-5 text-indigo-400" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-zinc-200 text-lg leading-tight">{song.title}</h4>
-                        <p className="text-sm text-zinc-400">{song.artist || "Unknown Artist"}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-black/20 rounded-xl p-3 border border-zinc-800/50">
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Key</p>
-                        <p className="text-sm font-mono text-zinc-300">{song.key || "-"}</p>
-                      </div>
-                      <div className="bg-black/20 rounded-xl p-3 border border-zinc-800/50">
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Tempo</p>
-                        <p className="text-sm font-mono text-zinc-300">{song.tempo ? `${song.tempo} BPM` : "-"}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-zinc-800/50 pt-4 mt-2">
-                      <Link href={`/dashboard/rehearse/${song.id}`} className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-wider bg-cyan-500/10 px-4 py-2 rounded-xl border border-cyan-500/20 text-center flex-1 mr-2">
-                        Launch AR
-                      </Link>
-                      {bandRole === "ADMIN" && (
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => openModal(song)} className="p-2 glass text-zinc-400 hover:text-indigo-400 rounded-xl transition-colors border border-transparent hover:border-indigo-500/30 bg-transparent hover:bg-indigo-500/10">
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleDelete(song.id)} className="p-2 glass text-zinc-400 hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30 bg-transparent hover:bg-red-500/10">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-            </>
-          )}
-        </div>
+      {editing !== undefined && (
+        <WorkspaceDialog title={editing ? "Edit Song" : "Add Song"} busy={isSaving} wide onDismiss={() => setEditing(undefined)}>
+          <SongEditor song={editing} busy={isSaving} error={formError} onSave={(draft) => void saveSong(draft)} onCancel={() => setEditing(undefined)} />
+        </WorkspaceDialog>
       )}
 
-      {/* Add Song Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="glass-card rounded-3xl w-full max-w-lg p-6 border border-zinc-700/50 shadow-2xl relative"
-          >
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-white">
-              <X className="w-5 h-5" />
-            </button>
-            <h2 className="text-2xl font-bold text-white mb-6">{editingSong ? "Edit Song" : "Add New Song"}</h2>
-            
-            <form onSubmit={handleAddSong} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-300 ml-1">Song Title</label>
-                <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="Mr. Brightside" />
-              </div>
-              
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-300 ml-1">Original Artist (Optional)</label>
-                <input type="text" value={artist} onChange={(e) => setArtist(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="The Killers" />
-              </div>
+      {viewing && (
+        <WorkspaceDialog title={`Rehearsal Notes · ${viewing.title}`} busy={false} wide onDismiss={() => setViewing(undefined)}>
+          <SongRehearsalDetails song={viewing} />
+        </WorkspaceDialog>
+      )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-300 ml-1">Key</label>
-                  <input type="text" value={songKey} onChange={(e) => setSongKey(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none uppercase" placeholder="Db Major" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-300 ml-1">Tempo (BPM)</label>
-                  <input type="number" value={tempo} onChange={(e) => setTempo(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="148" />
-                </div>
-              </div>
-
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 rounded-xl font-medium text-sm text-zinc-300 glass hover:bg-white/5 transition-colors">
-                  Cancel
-                </button>
-                <button type="submit" disabled={isSubmitting} className="flex-1 py-3 rounded-xl font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2">
-                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {editingSong ? "Update Song" : "Save Song"}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
+      {deleting && (
+        <WorkspaceDialog title="Delete Song?" busy={isSaving} onDismiss={() => setDeleting(undefined)}>
+          <p className="text-sm text-zinc-300"><strong>{deleting.title}</strong> will be removed from the repertoire and all setlists.</p>
+          {formError && <p role="alert" className="mt-3 text-sm text-red-300">{formError}</p>}
+          <div className="mt-4 flex flex-wrap justify-end gap-2">
+            <button type="button" className="workspace-secondary" disabled={isSaving} onClick={() => setDeleting(undefined)}>Cancel</button>
+            <button type="button" className="workspace-danger" disabled={isSaving} onClick={() => void deleteSong(deleting)}>{isSaving ? "Deleting…" : "Delete Song"}</button>
+          </div>
+        </WorkspaceDialog>
       )}
     </div>
   );

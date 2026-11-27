@@ -152,10 +152,10 @@ export default function FinancesPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in relative">
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between items-start gap-4">
+      <header className="workspace-header">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2">Finances</h1>
-          <p className="hidden lg:block text-zinc-400 text-sm">Track payouts, expenses, and manage the band fund.</p>
+          <h1>Finances</h1>
+          <p>Track payouts, expenses, and manage the band fund.</p>
         </div>
         {bandRole === "ADMIN" && (
           <motion.button 
@@ -275,7 +275,7 @@ export default function FinancesPage() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-300 ml-1">Description</label>
-                <input type="text" required value={description} onChange={(e) => setDescription(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="e.g. Gig Payout - The Roxy" />
+                <input type="text" required value={description} onChange={(e) => setDescription(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="e.g. Gig payout - The Roxy" />
               </div>
 
               <div className="pt-4 flex gap-3">

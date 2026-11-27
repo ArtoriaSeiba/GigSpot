@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Guitar, CalendarSync, Sparkles, Music2, Users, DollarSign, CheckCircle2, Star, ShieldCheck, Menu, X } from "lucide-react";
+import { GigSpotBrand } from "@/components/gigspot-brand";
+import { ArrowRight, Guitar, CalendarSync, Music2, Users, DollarSign, Star, ShieldCheck, Menu, X } from "lucide-react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 
 const fadeIn: Variants = {
@@ -22,16 +23,14 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-black overflow-hidden font-sans selection:bg-indigo-500/30">
+    <div className="workspace-shell min-h-screen overflow-hidden selection:bg-violet-500/30">
       {/* --- NAVBAR --- */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-            GigSpot.
-          </Link>
+          <GigSpotBrand />
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
             <Link href="#features" className="hover:text-white transition-colors">Features</Link>
-            <Link href="#workflow" className="hover:text-white transition-colors">How it Works</Link>
+            <Link href="#workflow" className="hover:text-white transition-colors">How It Works</Link>
             <Link href="#testimonials" className="hover:text-white transition-colors">Testimonials</Link>
           </div>
           <div className="flex items-center gap-4">
@@ -58,7 +57,7 @@ export default function Home() {
             >
               <div className="px-6 py-4 flex flex-col gap-4 text-sm font-medium text-zinc-400">
                 <Link onClick={() => setIsMenuOpen(false)} href="#features" className="hover:text-white py-2">Features</Link>
-                <Link onClick={() => setIsMenuOpen(false)} href="#workflow" className="hover:text-white py-2">How it Works</Link>
+                <Link onClick={() => setIsMenuOpen(false)} href="#workflow" className="hover:text-white py-2">How It Works</Link>
                 <Link onClick={() => setIsMenuOpen(false)} href="#testimonials" className="hover:text-white py-2">Testimonials</Link>
                 <div className="h-px bg-white/10 my-2" />
                 <Link onClick={() => setIsMenuOpen(false)} href="/login" className="hover:text-white py-2">Sign In</Link>
@@ -69,61 +68,27 @@ export default function Home() {
         </AnimatePresence>
       </nav>
 
-      {/* --- HERO SECTION --- */}
-      <section className="relative pt-40 pb-20 lg:pt-48 lg:pb-32 px-6">
-        {/* Background Gradients */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-600/20 rounded-full blur-[120px] pointer-events-none" />
-
-        <motion.div 
+      <section className="px-4 pt-29 pb-12 sm:px-6 lg:pt-32 lg:pb-16">
+        <motion.div
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="relative z-10 max-w-5xl mx-auto text-center"
+          className="workspace-panel workspace-hero workspace-hero-art mx-auto flex min-h-[30rem] max-w-7xl items-center p-6 sm:p-10 lg:p-14"
         >
-          <motion.div variants={fadeIn} className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-indigo-500/30 shadow-lg shadow-indigo-500/10 mb-8">
-            <Sparkles className="w-4 h-4 text-cyan-400" />
-            <span className="text-sm font-medium text-indigo-100 tracking-wide">Introducing WebAR Fretboard Sync v2.0</span>
-          </motion.div>
-
-          <motion.h1 variants={fadeIn} className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-400 mb-8 leading-[1.1]">
-            The Command Center for <br className="hidden lg:block" />
-            <span className="bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
-              Independent Musicians.
-            </span>
-          </motion.h1>
-
-          <motion.p variants={fadeIn} className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-10">
-            Escape the chaos of group chats. GigSpot is the all-in-one platform to organize gigs, manage dynamic setlists, track revenue, and master your repertoire with live Augmented Reality.
-          </motion.p>
-
-          <motion.div variants={fadeIn} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link 
-              href="/register" 
-              className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)] w-full sm:w-auto"
-            >
-              <span>Start for free</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link 
-              href="#features" 
-              className="inline-flex items-center justify-center px-8 py-4 glass rounded-full font-medium text-white hover:bg-white/10 transition-colors w-full sm:w-auto"
-            >
-              Explore Features
-            </Link>
-          </motion.div>
-
-          {/* Trust indicators */}
-          <motion.div variants={fadeIn} className="mt-16 pt-10 border-t border-white/10 flex flex-col items-center justify-center gap-6">
-            <p className="text-sm text-zinc-500 font-medium uppercase tracking-widest">Trusted by over 10,000 gigging bands worldwide</p>
-            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-50 grayscale">
-              {/* Fake band logos using text for demo */}
-              <span className="text-xl font-bold font-serif">The Velvet Underground</span>
-              <span className="text-xl font-black italic tracking-tighter">METALLICA</span>
-              <span className="text-xl font-mono font-bold">RADIOHEAD</span>
-              <span className="text-xl font-bold tracking-widest">COLDPLAY</span>
-            </div>
-          </motion.div>
+          <div className="max-w-full space-y-6 sm:max-w-[68%]">
+            <motion.h1 variants={fadeIn} className="max-w-[17ch] text-4xl font-bold leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-7xl">
+              The Workspace For <span className="text-violet-200">Independent Musicians.</span>
+            </motion.h1>
+            <motion.p variants={fadeIn} className="max-w-[45ch] text-base leading-relaxed text-zinc-200 sm:text-lg">
+              Organize gigs, build setlists, and rehearse with a live AR fretboard. Give your band one place to get ready for the next show.
+            </motion.p>
+            <motion.div variants={fadeIn} className="flex flex-wrap items-center gap-3">
+              <Link href="/register" className="workspace-primary">
+                Start For Free <ArrowRight aria-hidden="true" className="size-4" />
+              </Link>
+              <Link href="#features" className="workspace-secondary w-full sm:w-fit">Explore Features</Link>
+            </motion.div>
+          </div>
         </motion.div>
       </section>
 
@@ -131,7 +96,7 @@ export default function Home() {
       <section id="features" className="py-24 bg-zinc-950 relative border-y border-white/5">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Everything you need to own the stage.</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Everything You Need To Own The Stage.</h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto">We built GigSpot to replace the 5 different apps your band currently uses to barely stay organized.</p>
           </div>
 
@@ -188,7 +153,7 @@ export default function Home() {
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="lg:w-1/2 space-y-8">
               <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight">
-                From booking to encore, <br/>we've got you covered.
+                From Booking To Encore, <br />We&apos;ve Got You Covered.
               </h2>
               
               <div className="space-y-6 pt-4">
@@ -238,7 +203,7 @@ export default function Home() {
                         <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex flex-col items-center justify-center">
-                              <span className="text-[10px] uppercase font-bold text-indigo-400 leading-none">{gig.date.split(' ')[0]}</span>
+                              <span className="text-[10px] font-bold text-indigo-400 leading-none">{gig.date.split(' ')[0]}</span>
                               <span className="text-sm font-black text-white leading-none mt-1">{gig.date.split(' ')[1]}</span>
                             </div>
                             <span className="font-semibold text-zinc-200">{gig.name}</span>
@@ -259,7 +224,7 @@ export default function Home() {
       <section id="testimonials" className="py-24 bg-zinc-950 border-y border-white/5">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-white">Built by musicians, for musicians.</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-white">Built By Musicians, For Musicians.</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -267,12 +232,12 @@ export default function Home() {
               {
                 quote: "GigSpot completely eliminated the confusion of text thread setlists. We literally load in, look at the dashboard, and rock out.",
                 author: "Sarah J.",
-                role: "Lead Singer, The Echoes"
+                role: "Lead singer, The Echoes"
               },
               {
                 quote: "The WebAR feature is mind-blowing. Learning new covers for wedding gigs takes half the time it used to.",
                 author: "Mike T.",
-                role: "Session Guitarist"
+                role: "Session guitarist"
               },
               {
                 quote: "Syncing load-in times directly to my Google Calendar means I'm actually on time for soundcheck now.",
@@ -282,7 +247,7 @@ export default function Home() {
             ].map((t, i) => (
               <div key={i} className="glass-card p-8 rounded-3xl relative">
                 <Star className="w-8 h-8 text-yellow-500/20 absolute top-6 right-6" />
-                <p className="text-zinc-300 mb-6 italic">"{t.quote}"</p>
+                <p className="mb-6 text-zinc-300 italic">&ldquo;{t.quote}&rdquo;</p>
                 <div>
                   <p className="font-bold text-white">{t.author}</p>
                   <p className="text-xs text-indigo-400">{t.role}</p>
@@ -297,7 +262,7 @@ export default function Home() {
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-indigo-900/20" />
         <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
-          <h2 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">Ready to rock?</h2>
+          <h2 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">Ready To Rock?</h2>
           <p className="text-xl text-zinc-400 mb-10">Stop managing spreadsheets. Start managing your music.</p>
           <Link 
             href="/register" 
@@ -313,13 +278,12 @@ export default function Home() {
       {/* --- FOOTER --- */}
       <footer className="border-t border-white/10 bg-black py-12">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <Link href="/" className="font-bold text-xl bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-            GigSpot.
-          </Link>
-          <div className="text-sm text-zinc-500 flex gap-6">
+          <GigSpotBrand />
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-zinc-400">
             <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="#" className="hover:text-white transition-colors">Terms Of Service</Link>
             <Link href="#" className="hover:text-white transition-colors">Contact</Link>
+            <a href="https://getsongbpm.com/" className="hover:text-white transition-colors">Key And Tempo By GetSongBPM</a>
           </div>
           <p className="text-sm text-zinc-600">© 2026 GigSpot. All rights reserved.</p>
         </div>

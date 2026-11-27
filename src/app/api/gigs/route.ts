@@ -6,6 +6,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 import { getBandContext } from "@/lib/band-context";
+import { notifyBandMembers } from "@/lib/notifications";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -16,7 +17,19 @@ export async function GET() {
 
   const gigs = await prisma.gig.findMany({
     where: { bandId: bandMember.bandId },
-    orderBy: { date: "asc" }
+    orderBy: { date: "asc" },
+    include: {
+      setlists: {
+        include: {
+          songs: {
+            orderBy: { order: "asc" },
+            include: {
+              song: { select: { title: true, key: true, tempo: true } }
+            }
+          }
+        }
+      }
+    }
   });
 
   const transactions = await prisma.financeTransaction.findMany({
@@ -64,6 +77,13 @@ export async function POST(req: Request) {
         income: income ? parseFloat(income) : null,
         bandId: band.id
       }
+    });
+
+    await notifyBandMembers({
+      bandId: band.id,
+      excludeUserId: session.user.id,
+      title: `New Gig: ${newGig.title}`,
+      message: `${newGig.venue} on ${new Date(newGig.date).toLocaleDateString()}.`
     });
 
     return NextResponse.json(newGig, { status: 201 });

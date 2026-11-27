@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { getBandContext } from "@/lib/band-context";
-import { toTitleCase } from "@/lib/utils";
+import { taskAssigneeIds, toTitleCase } from "@/lib/utils";
 
 const prisma = new PrismaClient();
 
@@ -70,7 +70,7 @@ export async function PATCH(req: Request) {
        return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
-    const isAssigned = existingTask.assignedTo?.split(',').includes(session.user.id);
+    const isAssigned = taskAssigneeIds(existingTask.assignedTo).includes(session.user.id);
     if (bandMember.bandRole !== "ADMIN" && !isAssigned) {
        return NextResponse.json({ error: "Forbidden: Only admins and assigned members can update task progress" }, { status: 403 });
     }
