@@ -284,6 +284,7 @@ export default function Home() {
             <Link href="#" className="hover:text-white transition-colors">Terms Of Service</Link>
             <Link href="#" className="hover:text-white transition-colors">Contact</Link>
             <a href="https://getsongbpm.com/" className="hover:text-white transition-colors">Key And Tempo By GetSongBPM</a>
+            <a href="/data-sources.html" className="hover:text-white transition-colors">Data Sources</a>
           </div>
           <p className="text-sm text-zinc-600">© 2026 GigSpot. All rights reserved.</p>
         </div>
