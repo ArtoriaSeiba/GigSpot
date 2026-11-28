@@ -203,31 +203,67 @@ export default function TasksPage() {
         </section>
       ) : (
         <>
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
             {userId && (
-              <div role="group" aria-label="Task Scope" className="inline-flex gap-1 rounded-xl border border-(--gig-stroke) bg-(--gig-surface) p-1">
-                <button type="button" aria-pressed={myTasksOnly} onClick={() => setScope("mine")} className="min-h-10 rounded-lg px-3 text-sm font-medium text-zinc-300 hover:bg-white/5 aria-pressed:bg-violet-400/20 aria-pressed:text-violet-100">My Tasks</button>
-                <button type="button" aria-pressed={!myTasksOnly} onClick={() => setScope("all")} className="min-h-10 rounded-lg px-3 text-sm font-medium text-zinc-300 hover:bg-white/5 aria-pressed:bg-violet-400/20 aria-pressed:text-violet-100">All Tasks</button>
+              <div
+                role="group"
+                aria-label="Task Scope"
+                className="inline-flex h-11 items-center gap-1 rounded-xl border border-(--gig-stroke) bg-(--gig-surface) p-1"
+              >
+                <button
+                  type="button"
+                  aria-pressed={myTasksOnly}
+                  onClick={() => setScope("mine")}
+                  className="h-full rounded-lg px-3 text-sm font-medium text-zinc-300 hover:bg-white/5 aria-pressed:bg-violet-400/20 aria-pressed:text-violet-100"
+                >
+                  My Tasks
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={!myTasksOnly}
+                  onClick={() => setScope("all")}
+                  className="h-full rounded-lg px-3 text-sm font-medium text-zinc-300 hover:bg-white/5 aria-pressed:bg-violet-400/20 aria-pressed:text-violet-100"
+                >
+                  All Tasks
+                </button>
               </div>
             )}
-            <WorkspaceFilter title="Filter By Due Date" value={deadlines.find(({ id }) => id === deadline)!.label} active={deadline !== "all"}>
-              {(dismiss) => (
-                <div className="grid gap-2">
-                  {deadlines.map(({ id, label }) => (
-                    <button key={id} type="button" aria-pressed={deadline === id}
-                      className="workspace-secondary justify-between text-left aria-pressed:border-violet-400/45 aria-pressed:bg-violet-400/15"
-                      onClick={() => {
-                        setDeadline(id);
-                        dismiss();
-                      }}
-                    >
-                      <span>{label}{id === "soon" && <span className="mt-0.5 block text-xs font-normal text-zinc-400">Today through the next 7 days</span>}</span>
-                      {deadline === id && <Check aria-hidden="true" className="size-4 shrink-0 text-violet-200" />}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </WorkspaceFilter>
+            <div className="ml-auto">
+              <WorkspaceFilter
+                title="Filter By Due Date"
+                value={deadlines.find(({ id }) => id === deadline)!.label}
+                active={deadline !== "all"}
+              >
+                {(dismiss) => (
+                  <div className="grid gap-2">
+                    {deadlines.map(({ id, label }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        aria-pressed={deadline === id}
+                        className="workspace-secondary justify-between text-left aria-pressed:border-violet-400/45 aria-pressed:bg-violet-400/15"
+                        onClick={() => {
+                          setDeadline(id);
+                          dismiss();
+                        }}
+                      >
+                        <span>
+                          {label}
+                          {id === "soon" && (
+                            <span className="mt-0.5 block text-xs font-normal text-zinc-400">
+                              Today through the next 7 days
+                            </span>
+                          )}
+                        </span>
+                        {deadline === id && (
+                          <Check aria-hidden="true" className="size-4 shrink-0 text-violet-200" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </WorkspaceFilter>
+            </div>
           </div>
           {filtered.length === 0 ? (
             <section className="workspace-panel space-y-2" aria-label="Empty Task Board">

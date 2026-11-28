@@ -214,7 +214,7 @@ export default function FinancesPage() {
           <p>Track payouts, expenses, and manage the band fund.</p>
         </div>
         {bandRole === "ADMIN" && (
-          <motion.button 
+          <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => openModal()}
@@ -237,102 +237,101 @@ export default function FinancesPage() {
       )}
 
       {!loadError && <>
-      <div className="flex flex-wrap items-center justify-between gap-2.5">
-        <h2 className="text-lg font-semibold tracking-tight">Band Fund</h2>
-        <WorkspaceFilter title="Filter By Date Range" value={rangeLabel} active={hasRange}>
-          {(dismiss) => <TransactionDateFilter range={range} onApply={setRange} dismiss={dismiss} />}
-        </WorkspaceFilter>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card p-6 rounded-3xl relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-zinc-400">Total Income</h3>
-            <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-            </div>
-          </div>
-          <p className="text-3xl font-extrabold text-white">${totalIncome.toFixed(2)}</p>
-        </motion.div>
-        
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card p-6 rounded-3xl relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-zinc-400">Total Expenses</h3>
-            <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
-              <ArrowDownRight className="w-4 h-4 text-red-500" />
-            </div>
-          </div>
-          <p className="text-3xl font-extrabold text-white">${totalExpenses.toFixed(2)}</p>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card p-6 rounded-3xl relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-zinc-400">Net Balance</h3>
-            <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center">
-              <Wallet className="w-4 h-4 text-indigo-500" />
-            </div>
-          </div>
-          <p className={`text-3xl font-extrabold ${netBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            ${netBalance.toFixed(2)}
-          </p>
-        </motion.div>
-      </div>
-
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card rounded-3xl p-6">
-        <h2 className="text-xl font-bold text-white mb-6">Transactions</h2>
-        <div className="workspace-nav space-y-3 max-h-[500px] overflow-y-auto" role="region" aria-label="Transactions" tabIndex={0}>
-          {visibleTransactions.length === 0 ? (
-            <div className="text-center py-12">
-              <DollarSign className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-              <p className="text-zinc-400">{hasRange ? "No transactions in this date range." : "No transactions recorded yet."}</p>
-            </div>
-          ) : (
-            <AnimatePresence>
-              {visibleTransactions.map((tx, i) => {
-                const payment = readGigPayment(tx.description);
-                const title = payment?.title ?? tx.description;
-                return (
-                <motion.div 
-                  initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.035 * Math.min(i, 5) }}
-                  key={tx.id} 
-                  className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl bg-black/20 hover:bg-black/40 transition-colors border border-zinc-800 group gap-4"
-                >
-                  <div className="flex items-start md:items-center gap-4 flex-1 min-w-0">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-1 md:mt-0 ${tx.type === 'INCOME' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                      {tx.type === 'INCOME' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      {payment ? (
-                        <Link href={`/dashboard/gigs/${encodeURIComponent(payment.gigId)}`} className="break-words font-medium text-violet-200 hover:underline">{title}</Link>
-                      ) : <p className="break-words font-medium text-zinc-200">{title}</p>}
-                      <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-zinc-400">
-                        {payment && <span className="rounded-md bg-violet-400/15 px-2 py-0.5 font-medium text-violet-200">Gig Payment</span>}
-                        <time dateTime={tx.date}>{new Date(tx.date).toLocaleDateString(undefined, { dateStyle: "medium" })}</time>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between md:justify-end shrink-0 w-full md:w-auto pl-14 md:pl-0 mt-3 md:mt-0">
-                    <p className={`font-bold ${tx.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {tx.type === 'INCOME' ? '+' : '-'}${tx.amount.toFixed(2)}
-                    </p>
-                    {bandRole === "ADMIN" && (
-                      <div className="transition-opacity flex items-center gap-2 md:border-l md:border-zinc-800 md:pl-4 md:ml-4">
-                        <button aria-label={`Edit ${title}`} onClick={() => openModal(tx)} className="workspace-icon-button"><Edit2 className="size-4" /></button>
-                        <button aria-label={`Delete ${title}`} onClick={() => handleDelete(tx.id)} className="workspace-icon-button hover:text-red-300"><Trash2 className="size-4" /></button>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          )}
+        <div className="flex flex-wrap items-center justify-end gap-2.5">
+          <WorkspaceFilter title="Filter By Date Range" value={rangeLabel} active={hasRange}>
+            {(dismiss) => <TransactionDateFilter range={range} onApply={setRange} dismiss={dismiss} />}
+          </WorkspaceFilter>
         </div>
-      </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card p-6 rounded-3xl relative overflow-hidden group">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-zinc-400">Total Income</h3>
+              <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold text-white">${totalIncome.toFixed(2)}</p>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card p-6 rounded-3xl relative overflow-hidden group">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-zinc-400">Total Expenses</h3>
+              <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
+                <ArrowDownRight className="w-4 h-4 text-red-500" />
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold text-white">${totalExpenses.toFixed(2)}</p>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card p-6 rounded-3xl relative overflow-hidden group">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-zinc-400">Net Balance</h3>
+              <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                <Wallet className="w-4 h-4 text-indigo-500" />
+              </div>
+            </div>
+            <p className={`text-3xl font-extrabold ${netBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+              ${netBalance.toFixed(2)}
+            </p>
+          </motion.div>
+        </div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card rounded-3xl p-6">
+          <h2 className="text-xl font-bold text-white mb-6">Transactions</h2>
+          <div className="workspace-nav space-y-3 max-h-[500px] overflow-y-auto" role="region" aria-label="Transactions" tabIndex={0}>
+            {visibleTransactions.length === 0 ? (
+              <div className="text-center py-12">
+                <DollarSign className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
+                <p className="text-zinc-400">{hasRange ? "No transactions in this date range." : "No transactions recorded yet."}</p>
+              </div>
+            ) : (
+              <AnimatePresence>
+                {visibleTransactions.map((tx, i) => {
+                  const payment = readGigPayment(tx.description);
+                  const title = payment?.title ?? tx.description;
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.035 * Math.min(i, 5) }}
+                      key={tx.id}
+                      className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl bg-black/20 hover:bg-black/40 transition-colors border border-zinc-800 group gap-4"
+                    >
+                      <div className="flex items-start md:items-center gap-4 flex-1 min-w-0">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-1 md:mt-0 ${tx.type === 'INCOME' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                          {tx.type === 'INCOME' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {payment ? (
+                            <Link href={`/dashboard/gigs/${encodeURIComponent(payment.gigId)}`} className="break-words font-medium text-violet-200 hover:underline">{title}</Link>
+                          ) : <p className="break-words font-medium text-zinc-200">{title}</p>}
+                          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-zinc-400">
+                            {payment && <span className="rounded-md bg-violet-400/15 px-2 py-0.5 font-medium text-violet-200">Gig Payment</span>}
+                            <time dateTime={tx.date}>{new Date(tx.date).toLocaleDateString(undefined, { dateStyle: "medium" })}</time>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between md:justify-end shrink-0 w-full md:w-auto pl-14 md:pl-0 mt-3 md:mt-0">
+                        <p className={`font-bold ${tx.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {tx.type === 'INCOME' ? '+' : '-'}${tx.amount.toFixed(2)}
+                        </p>
+                        {bandRole === "ADMIN" && (
+                          <div className="transition-opacity flex items-center gap-2 md:border-l md:border-zinc-800 md:pl-4 md:ml-4">
+                            <button aria-label={`Edit ${title}`} onClick={() => openModal(tx)} className="workspace-icon-button"><Edit2 className="size-4" /></button>
+                            <button aria-label={`Delete ${title}`} onClick={() => handleDelete(tx.id)} className="workspace-icon-button hover:text-red-300"><Trash2 className="size-4" /></button>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            )}
+          </div>
+        </motion.div>
       </>}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             className="glass-card rounded-3xl w-full max-w-md p-6 border border-zinc-700/50 shadow-2xl relative"
@@ -341,7 +340,7 @@ export default function FinancesPage() {
               <X className="w-5 h-5" />
             </button>
             <h2 className="text-2xl font-bold text-white mb-6">{editingTx ? "Edit Transaction" : "Record Transaction"}</h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {editingPayment ? <p className="text-sm text-violet-200">Gig Payment · Income</p> : <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-300 ml-1">Type</label>
@@ -350,7 +349,7 @@ export default function FinancesPage() {
                   <button type="button" onClick={() => setType('EXPENSE')} className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${type === 'EXPENSE' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'glass text-zinc-400'}`}>Expense</button>
                 </div>
               </div>}
-              
+
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-300 ml-1">Amount ($)</label>
                 <input type="number" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="0.00" />
