@@ -49,7 +49,7 @@ export function CreateBandForm({ onCancel }: { onCancel?: () => void }) {
           </button>
         )}
       </div>
-      <p className="text-zinc-400 mb-8 text-left">{onCancel ? "Start a new project or group." : "Wait for an invite or start your own band right now."}</p>
+      <p className="text-zinc-400 mb-8 text-left">{onCancel ? "Start a new project or group." : "Create your own band below, or ask a band admin for an invite link to join an existing band."}</p>
       
       <form onSubmit={handleCreate} className="space-y-4 text-left">
         {error && (

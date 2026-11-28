@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { ArrowDown, ArrowLeft, ArrowUp, Calendar, GripVertical, MessageCircle, Music, NotebookPen, Play, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Calendar, GripVertical, ListMusic, MessageCircle, Music, NotebookPen, Play, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Reorder, useDragControls } from "framer-motion";
 import toast from "react-hot-toast";
@@ -239,9 +239,14 @@ function GigSetlist({ gigId }: { gigId: string }) {
         </div>
         <div className="flex flex-wrap gap-2">
           {savedSetlist && savedSongs.length > 0 && !draft && (
-            <Link href={`/dashboard/rehearse/${encodeURIComponent(savedSetlist.id)}?gigId=${encodeURIComponent(gig.id)}`} className="workspace-primary w-auto">
-              <Play aria-hidden="true" className="size-4" /> Rehearse Setlist
-            </Link>
+            <>
+              <Link href={`/dashboard/rehearse/stage/${encodeURIComponent(gig.id)}/${encodeURIComponent(savedSetlist.id)}?from=gig`} className="workspace-primary w-auto">
+                <ListMusic aria-hidden="true" className="size-4" /> Open Stage View
+              </Link>
+              <Link href={`/dashboard/rehearse/${encodeURIComponent(savedSetlist.id)}?gigId=${encodeURIComponent(gig.id)}`} className="workspace-secondary">
+                <Play aria-hidden="true" className="size-4" /> Rehearse With AR
+              </Link>
+            </>
           )}
           <a href={buildWhatsAppUrl(formatGigCallSheet(gig))} target="_blank" rel="noopener noreferrer" className="workspace-secondary">
             <MessageCircle aria-hidden="true" className="size-4" /> Share Call Sheet

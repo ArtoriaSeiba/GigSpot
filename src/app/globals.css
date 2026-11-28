@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source("..");
 
 @theme inline {
   --color-background: #0e0e15;
@@ -12,6 +12,16 @@
   --gig-muted: #aaa7ba;
   --gig-card: linear-gradient(145deg, #1b1a27, #14141d 72%);
   --gig-shadow: 0 16px 44px -30px #020109, inset 0 1px rgba(255, 255, 255, .035);
+}
+
+.workspace-shell:has([data-stage-reader]) > :not(main),
+.workspace-main-content:has([data-stage-reader]) > .workspace-global-alerts {
+  display: none;
+}
+
+.workspace-main-content:has([data-stage-reader]) {
+  max-width: none;
+  padding: 0;
 }
 
 @layer components {
@@ -160,6 +170,86 @@
       opacity: .43;
     }
   }
+}
+
+@media (min-width: 64rem) and (min-height: 43rem) {
+  .auth-register .auth-frame {
+    min-height: 38rem;
+  }
+}
+
+@media (max-width: 63.99rem) and (max-height: 48rem) {
+  .auth-register .auth-art {
+    min-height: 0;
+    padding-block: 0;
+  }
+}
+
+@media (max-width: 63.99rem) and (max-height: 40rem) {
+  .auth-register {
+    padding-block: .25rem;
+  }
+
+  .auth-register .auth-form {
+    padding-block: .375rem;
+  }
+
+  .auth-register .auth-enter {
+    display: grid;
+    gap: .5rem;
+  }
+
+  .auth-register .auth-enter > * {
+    margin-block: 0;
+  }
+
+  .auth-register-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.auth-heading p { --auth-delay: 55ms; }
+.auth-google > button:first-of-type { --auth-delay: 105ms; }
+.auth-google > button:last-of-type { --auth-delay: 150ms; }
+.auth-email-divider { --auth-delay: 195ms; }
+.auth-identity > label:first-child { --auth-delay: 230ms; }
+.auth-identity > label:nth-child(2) { --auth-delay: 280ms; }
+.auth-entry-fields > .auth-password-field { --auth-delay: 330ms; }
+.auth-entry-fields > .auth-password-field ~ .auth-password-field,
+.auth-entry-fields > a { --auth-delay: 380ms; }
+.auth-entry-fields > button { --auth-delay: 430ms; }
+.auth-switch { --auth-delay: 480ms; }
+
+.auth-preview > :nth-child(2) { --auth-delay: 90ms; }
+.auth-preview > :nth-child(3) { --auth-delay: 150ms; }
+
+[data-auth-entrance="ready"] :is(
+  .auth-preview > *,
+  .auth-heading h1,
+  .auth-heading p,
+  .auth-google > button,
+  .auth-email-divider,
+  .auth-identity > label,
+  .auth-entry-fields > :is(.auth-password-field, a, button),
+  .auth-switch
+) {
+  animation: auth-enter 620ms cubic-bezier(.2,.75,.25,1) var(--auth-delay, 0ms) backwards;
+}
+
+[data-auth-entrance="ready"] :is(.auth-google > button, .auth-entry-fields > button, .auth-entry-fields > a):focus-visible,
+[data-auth-entrance="ready"] :is(.auth-identity > label, .auth-password-field, .auth-switch):has(:focus-visible) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-auth-entrance="ready"] {
+    --auth-enter-distance: 0px;
+  }
+}
+
+@keyframes auth-enter {
+  from { opacity: .2; transform: translateY(var(--auth-enter-distance, 14px)); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media print {

@@ -6,6 +6,7 @@ import type { HandLandmarker as HandLandmarkerType } from "@mediapipe/tasks-visi
 import { arucoToSVGString } from "aruco-marker";
 import { WorkspaceDialog } from "@/components/workspace-dialog";
 import { SongRehearsalDetails } from "@/components/song-rehearsal-details";
+import { RehearsalTuner } from "@/components/rehearsal-tuner";
 import type { SongRehearsal } from "@/lib/song-rehearsal";
 
 export type RehearsalSong = SongRehearsal & {
@@ -646,6 +647,7 @@ export function RehearsalCamera({ songs, setlist }: {
 
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,19rem)]">
         <section className="workspace-panel min-w-0 space-y-3 p-3 sm:p-4" aria-label="Fretboard Practice">
+          <RehearsalTuner compact />
           <div className="relative isolate aspect-[4/3] max-h-[64dvh] min-h-44 overflow-hidden rounded-xl border border-white/10 bg-[#08080c] sm:aspect-video">
             <video ref={videoRef} autoPlay playsInline muted aria-label="Guitar Camera Preview" className="absolute inset-0 size-full object-contain" />
             <canvas ref={canvasRef} aria-hidden="true" className={`pointer-events-none absolute inset-0 size-full object-contain ${cameraStatus === "ready" ? "" : "invisible"}`} />

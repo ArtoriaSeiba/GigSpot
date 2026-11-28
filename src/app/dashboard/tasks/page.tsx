@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { Calendar, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, Check, Ellipsis, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { WorkspaceDialog } from "@/components/workspace-dialog";
+import { WorkspaceFilter } from "@/components/workspace-filter";
 import { workspaceErrorMessage, workspaceMutation, workspaceRequest, type BandRole } from "@/lib/workspace-requests";
 import { taskAssigneeIds } from "@/lib/utils";
 
@@ -15,30 +16,44 @@ const statuses = [
 ] as const;
 
 type Status = (typeof statuses)[number]["id"];
-type Task = { id: string; title: string; status: Status; assignedTo: string | null; dueDate: string | null };
+type Task = { id: string; title: string; status: Status; assignedTo: string | null; dueDate: string | null; updatedAt?: string };
 type Member = { userId: string; user: { name: string | null; email: string | null } };
 type Board =
   | { status: "loading" | "error" | "no-band" }
   | { status: "ready"; tasks: Task[]; members: Member[]; band: BandRole };
 
-const transitions: Record<Status, { to: Status; label: string }[]> = {
-  PENDING: [{ to: "IN_PROGRESS", label: "Start" }],
-  IN_PROGRESS: [{ to: "PENDING", label: "Move To Pending" }, { to: "COMPLETED", label: "Complete" }],
-  COMPLETED: [{ to: "IN_PROGRESS", label: "Reopen" }],
+const nextActions: Record<Status, { to: Status; label: string }> = {
+  PENDING: { to: "IN_PROGRESS", label: "Start" },
+  IN_PROGRESS: { to: "COMPLETED", label: "Complete" },
+  COMPLETED: { to: "IN_PROGRESS", label: "Reopen" },
 };
 
+const deadlines = [
+  { id: "all", label: "Any Due Date" },
+  { id: "overdue", label: "Overdue" },
+  { id: "soon", label: "Due Soon" },
+] as const;
+type Deadline = (typeof deadlines)[number]["id"];
+const recentCompletedLimit = 3;
 const dueDateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeZone: "UTC" });
+
+function localDateKey(date: Date) {
+  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+}
 
 export default function TasksPage() {
   const [board, setBoard] = useState<Board>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
-  const [myTasksOnly, setMyTasksOnly] = useState(false);
+  const [scope, setScope] = useState<"all" | "mine">();
+  const [deadline, setDeadline] = useState<Deadline>("all");
+  const [showCompleted, setShowCompleted] = useState(false);
   const [mobileStatus, setMobileStatus] = useState<Status>("PENDING");
   const [editing, setEditing] = useState<Task | null>();
   const [deleting, setDeleting] = useState<Task>();
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [updating, setUpdating] = useState<Record<string, boolean>>({});
+  const [actions, setActions] = useState<Task>();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -69,10 +84,18 @@ export default function TasksPage() {
   const members = board.status === "ready" ? board.members : [];
   const userId = board.status === "ready" ? board.band.userId : undefined;
   const isAdmin = board.status === "ready" && board.band.role === "ADMIN";
-  const filtered = tasks.filter((task) => !myTasksOnly || taskAssigneeIds(task.assignedTo).includes(userId ?? ""));
+  const myTasksOnly = Boolean(userId) && (scope ?? (isAdmin ? "all" : "mine")) === "mine";
   const memberNames = new Map(members.map((member) => [member.userId, member.user.name || member.user.email || "Unnamed member"]));
   const today = new Date();
-  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const todayKey = localDateKey(today);
+  const soonKey = localDateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7));
+  const scoped = tasks.filter((task) => !myTasksOnly || taskAssigneeIds(task.assignedTo).includes(userId ?? ""));
+  const filtered = scoped.filter((task) => {
+    if (deadline === "all") return true;
+    const due = task.dueDate?.slice(0, 10);
+    if (!due || task.status === "COMPLETED") return false;
+    return deadline === "overdue" ? due < todayKey : due >= todayKey && due <= soonKey;
+  });
 
   function openEditor(task: Task | null) {
     setFormError("");
@@ -180,16 +203,37 @@ export default function TasksPage() {
         </section>
       ) : (
         <>
-          {userId && (tasks.length > 0 || myTasksOnly) && (
-            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 workspace-secondary rounded-xl px-3 text-sm font-medium">
-              <input type="checkbox" checked={myTasksOnly} onChange={(event) => setMyTasksOnly(event.target.checked)} className="size-4 accent-indigo-500" />
-              Assigned To Me
-            </label>
-          )}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {userId && (
+              <div role="group" aria-label="Task Scope" className="inline-flex gap-1 rounded-xl border border-(--gig-stroke) bg-(--gig-surface) p-1">
+                <button type="button" aria-pressed={myTasksOnly} onClick={() => setScope("mine")} className="min-h-10 rounded-lg px-3 text-sm font-medium text-zinc-300 hover:bg-white/5 aria-pressed:bg-violet-400/20 aria-pressed:text-violet-100">My Tasks</button>
+                <button type="button" aria-pressed={!myTasksOnly} onClick={() => setScope("all")} className="min-h-10 rounded-lg px-3 text-sm font-medium text-zinc-300 hover:bg-white/5 aria-pressed:bg-violet-400/20 aria-pressed:text-violet-100">All Tasks</button>
+              </div>
+            )}
+            <WorkspaceFilter title="Filter By Due Date" value={deadlines.find(({ id }) => id === deadline)!.label} active={deadline !== "all"}>
+              {(dismiss) => (
+                <div className="grid gap-2">
+                  {deadlines.map(({ id, label }) => (
+                    <button key={id} type="button" aria-pressed={deadline === id}
+                      className="workspace-secondary justify-between text-left aria-pressed:border-violet-400/45 aria-pressed:bg-violet-400/15"
+                      onClick={() => {
+                        setDeadline(id);
+                        dismiss();
+                      }}
+                    >
+                      <span>{label}{id === "soon" && <span className="mt-0.5 block text-xs font-normal text-zinc-400">Today through the next 7 days</span>}</span>
+                      {deadline === id && <Check aria-hidden="true" className="size-4 shrink-0 text-violet-200" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </WorkspaceFilter>
+          </div>
           {filtered.length === 0 ? (
             <section className="workspace-panel space-y-2" aria-label="Empty Task Board">
-              <h2 className="text-lg font-semibold">{myTasksOnly ? "No Tasks Assigned To You" : "No Tasks Yet"}</h2>
-              <p className="text-sm text-zinc-400">{myTasksOnly ? "Turn off the filter to see the whole board." : isAdmin ? "Create a task to start organizing your band’s work." : "Tasks will appear here when a band admin adds them."}</p>
+              <h2 className="text-lg font-semibold">{deadline !== "all" ? "No Matching Tasks" : myTasksOnly ? "No Tasks Assigned To You" : "No Tasks Yet"}</h2>
+              {deadline !== "all" ? <button type="button" className="workspace-secondary" onClick={() => setDeadline("all")}>Clear Due Date Filter</button> :
+                <p className="text-sm text-zinc-400">{myTasksOnly ? "Switch to All Tasks to see the band’s board." : isAdmin ? "Create a task to start organizing your band’s work." : "Tasks will appear here when a band admin adds them."}</p>}
             </section>
           ) : (
             <>
@@ -198,14 +242,19 @@ export default function TasksPage() {
                 {statuses.map(({ id, label }) => (
                   <label key={id} className="relative grid min-h-11 cursor-pointer place-items-center rounded-lg px-1 text-center text-xs font-medium text-zinc-300 has-checked:bg-indigo-500/20 has-checked:text-indigo-100 has-focus-visible:outline-2 has-focus-visible:outline-indigo-300 sm:text-sm">
                     <input type="radio" name="task-status" value={id} checked={mobileStatus === id} onChange={() => setMobileStatus(id)} className="sr-only" />
-                    {label}
+                    <span>{label} <span className="text-zinc-400 tabular-nums">({filtered.filter((task) => task.status === id).length})</span></span>
                   </label>
                 ))}
               </fieldset>
               <div className="grid gap-4 lg:grid-cols-3">
                 {statuses.map(({ id, label, color }) => {
                   const column = filtered.filter((task) => task.status === id)
-                    .sort((a, b) => (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999") || a.title.localeCompare(b.title));
+                    .sort((a, b) => (id === "COMPLETED"
+                      ? (b.updatedAt ?? "").localeCompare(a.updatedAt ?? "")
+                      : (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999")) || a.title.localeCompare(b.title));
+                  const collapsed = id === "COMPLETED" && column.length > recentCompletedLimit;
+                  const visible = collapsed && !showCompleted ? column.slice(0, recentCompletedLimit) : column;
+                  const nextAction = nextActions[id];
                   return (
                     <section key={id} aria-labelledby={`tasks-${id}`} className={`workspace-panel ${mobileStatus === id ? "block" : "hidden lg:block"}`}>
                       <div className="mb-3 flex items-center justify-between gap-2">
@@ -213,8 +262,8 @@ export default function TasksPage() {
                         <span className="rounded-lg bg-zinc-800 px-2 py-1 text-xs tabular-nums text-zinc-300">{column.length}</span>
                       </div>
                       {column.length === 0 && <p className="py-3 text-sm text-zinc-400">No tasks in this status.</p>}
-                      <ul className="space-y-3">
-                        {column.map((task) => {
+                      <ul id={`task-list-${id}`} className="space-y-3">
+                        {visible.map((task) => {
                           const ids = taskAssigneeIds(task.assignedTo);
                           const canUpdate = isAdmin || ids.includes(userId ?? "");
                           const dueKey = task.dueDate?.slice(0, 10);
@@ -231,17 +280,9 @@ export default function TasksPage() {
                               )}
                               {(canUpdate || isAdmin) && (
                                 <div className="flex flex-wrap items-center gap-1 border-t border-zinc-800 pt-2">
-                                  {canUpdate && transitions[id].map(({ to, label }) => (
-                                    <button key={to} type="button" disabled={updating[task.id]} onClick={() => void updateStatus(task, to)} className="workspace-secondary px-2 text-xs">{updating[task.id] ? "Moving…" : label}</button>
-                                  ))}
-                                  {isAdmin && (
-                                    <>
-                                      <button type="button" disabled={updating[task.id]} aria-label={`Edit ${task.title}`} className="workspace-icon-button" onClick={() => openEditor(task)}><Pencil aria-hidden="true" className="size-4" /></button>
-                                      <button type="button" disabled={updating[task.id]} aria-label={`Delete ${task.title}`} className="workspace-icon-button hover:text-red-300" onClick={() => {
-                                        setFormError("");
-                                        setDeleting(task);
-                                      }}><Trash2 aria-hidden="true" className="size-4" /></button>
-                                    </>
+                                  {canUpdate && <button type="button" disabled={updating[task.id]} onClick={() => void updateStatus(task, nextAction.to)} className={`${id === "COMPLETED" ? "workspace-secondary" : "workspace-primary"} w-auto px-3 text-xs`}>{updating[task.id] ? "Moving…" : nextAction.label}</button>}
+                                  {(isAdmin || id === "IN_PROGRESS") && (
+                                    <button type="button" disabled={updating[task.id]} aria-label={`More Actions For ${task.title}`} aria-haspopup="dialog" className="workspace-icon-button ml-auto" onClick={() => setActions(task)}><Ellipsis aria-hidden="true" className="size-5" /></button>
                                   )}
                                 </div>
                               )}
@@ -249,6 +290,11 @@ export default function TasksPage() {
                           );
                         })}
                       </ul>
+                      {collapsed && (
+                        <button type="button" className="workspace-secondary mt-3 text-xs" aria-expanded={showCompleted} aria-controls={`task-list-${id}`} onClick={() => setShowCompleted(!showCompleted)}>
+                          {showCompleted ? "Show Fewer Completed" : `Show Older Completed (${column.length - recentCompletedLimit})`}
+                        </button>
+                      )}
                     </section>
                   );
                 })}
@@ -256,6 +302,28 @@ export default function TasksPage() {
             </>
           )}
         </>
+      )}
+
+      {actions && (
+        <WorkspaceDialog title={actions.title} busy={false} onDismiss={() => setActions(undefined)}>
+          <div className="flex flex-wrap gap-2">
+            {actions.status === "IN_PROGRESS" && <button type="button" className="workspace-secondary" onClick={() => {
+              setActions(undefined);
+              void updateStatus(actions, "PENDING");
+            }}><ArrowLeft aria-hidden="true" className="size-4" /> Move To Pending</button>}
+            {isAdmin && <>
+              <button type="button" className="workspace-secondary" onClick={() => {
+                setActions(undefined);
+                openEditor(actions);
+              }}><Pencil aria-hidden="true" className="size-4" /> Edit Task</button>
+              <button type="button" className="workspace-secondary text-red-300" onClick={() => {
+                setActions(undefined);
+                setFormError("");
+                setDeleting(actions);
+              }}><Trash2 aria-hidden="true" className="size-4" /> Delete Task</button>
+            </>}
+          </div>
+        </WorkspaceDialog>
       )}
 
       {editing !== undefined && (

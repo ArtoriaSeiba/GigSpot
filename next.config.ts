@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  outputFileTracingExcludes: { "/api/songs/chord-model": ["./.local-models/**"] },
 };
 
 export default nextConfig;

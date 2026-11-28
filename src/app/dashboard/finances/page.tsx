@@ -3,6 +3,11 @@
 import { useState, useEffect } from "react";
 import { Loader2, Plus, X, ArrowUpRight, ArrowDownRight, Wallet, Edit2, Trash2, DollarSign } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import { readGigPayment } from "@/lib/gig-payment-description";
+import { workspaceErrorMessage, workspaceMutation, workspaceRequest, type BandRole } from "@/lib/workspace-requests";
+import { WorkspaceFilter } from "@/components/workspace-filter";
 
 type Transaction = {
   id: string;
@@ -12,12 +17,60 @@ type Transaction = {
   date: string;
 };
 
+function localDateKey(date: Date) {
+  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+}
+
+function formatFilterDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(value));
+}
+
+type DateRange = { from: string; to: string };
+
+function TransactionDateFilter({ range, onApply, dismiss }: {
+  range: DateRange;
+  onApply: (range: DateRange) => void;
+  dismiss: () => void;
+}) {
+  const [draft, setDraft] = useState(range);
+  const invalid = Boolean(draft.from && draft.to && draft.from > draft.to);
+
+  function apply(value: DateRange) {
+    onApply(value);
+    dismiss();
+  }
+
+  return (
+    <form className="space-y-4" onSubmit={(event) => {
+      event.preventDefault();
+      if (!invalid) apply(draft);
+    }}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid min-w-0 gap-1.5 text-sm font-medium">From
+          <input className="workspace-input [color-scheme:dark]" type="date" value={draft.from} onChange={(event) => setDraft({ ...draft, from: event.target.value })} />
+        </label>
+        <label className="grid min-w-0 gap-1.5 text-sm font-medium">To
+          <input className="workspace-input [color-scheme:dark]" type="date" value={draft.to} onChange={(event) => setDraft({ ...draft, to: event.target.value })} />
+        </label>
+      </div>
+      {invalid && <p role="alert" className="text-sm text-red-300">The end date must be on or after the start date.</p>}
+      <div className="flex flex-wrap justify-end gap-2 border-t border-(--gig-stroke) pt-4">
+        <button type="button" className="workspace-secondary" disabled={!range.from && !range.to && !draft.from && !draft.to} onClick={() => apply({ from: "", to: "" })}>Clear Dates</button>
+        <button type="submit" className="workspace-primary w-auto" disabled={invalid}>Apply Dates</button>
+      </div>
+    </form>
+  );
+}
+
 export default function FinancesPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [bandRole, setBandRole] = useState("MUSICIAN");
+  const [range, setRange] = useState<DateRange>({ from: "", to: "" });
+  const [loadError, setLoadError] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   // Form State
   const [type, setType] = useState("INCOME");
@@ -26,11 +79,12 @@ export default function FinancesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const openModal = (tx?: Transaction) => {
+    setSaveError("");
     if (tx) {
       setEditingTx(tx);
-      setType(tx.type);
+      setType(readGigPayment(tx.description) ? "INCOME" : tx.type);
       setAmount(tx.amount.toString());
-      setDescription(tx.description);
+      setDescription(readGigPayment(tx.description)?.description ?? tx.description);
     } else {
       setEditingTx(null);
       setType("INCOME");
@@ -40,49 +94,42 @@ export default function FinancesPage() {
     setIsModalOpen(true);
   };
 
-  const fetchData = async () => {
-    try {
-      const roleRes = await fetch("/api/band/role");
-      if (roleRes.ok) {
-        const { role } = await roleRes.json();
+  const fetchData = (signal?: AbortSignal) =>
+    Promise.all([
+      workspaceRequest<BandRole>("/api/band/role", "Could not load your band.", { signal }),
+      workspaceRequest<Transaction[]>("/api/finances", "Could not load transactions.", { signal }),
+    ]).then(([{ role }, data]) => {
+      if (!signal?.aborted) {
         setBandRole(role);
+        setTransactions(data);
+        setLoadError(false);
       }
-      
-      const res = await fetch("/api/finances");
-      const data = await res.json();
-      setTransactions(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    }).catch(() => {
+      if (!signal?.aborted) setLoadError(true);
+    }).finally(() => {
+      if (!signal?.aborted) setIsLoading(false);
+    });
 
   useEffect(() => {
-    fetchData();
+    const controller = new AbortController();
+    void fetchData(controller.signal);
+    return () => controller.abort();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
+    setSaveError("");
     try {
-      const url = "/api/finances";
-      const method = editingTx ? "PUT" : "POST";
-      const body = editingTx
-        ? JSON.stringify({ id: editingTx.id, type, amount, description })
-        : JSON.stringify({ type, amount, description });
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body,
-      });
-      if (res.ok) {
-        setIsModalOpen(false);
-        fetchData();
-      }
-    } catch (e) {
-      console.error(e);
+      await workspaceMutation("/api/finances", editingTx ? "PUT" : "POST", {
+        ...(editingTx && { id: editingTx.id }), type, amount, description,
+      }, "Could not save the transaction.");
+      setIsModalOpen(false);
+      toast.success("Transaction saved.");
+      void fetchData();
+    } catch (error) {
+      setSaveError(workspaceErrorMessage(error, "Could not save the transaction."));
     } finally {
       setIsSubmitting(false);
     }
@@ -102,9 +149,18 @@ export default function FinancesPage() {
     }
   };
 
-  const totalIncome = transactions.filter(t => t.type === "INCOME").reduce((sum, t) => sum + t.amount, 0);
-  const totalExpenses = transactions.filter(t => t.type === "EXPENSE").reduce((sum, t) => sum + t.amount, 0);
+  const { from, to } = range;
+  const hasRange = Boolean(from || to);
+  const rangeLabel = from && to ? `${formatFilterDate(from)} – ${formatFilterDate(to)}`
+    : from ? `From ${formatFilterDate(from)}` : to ? `Through ${formatFilterDate(to)}` : "All Dates";
+  const visibleTransactions = transactions.filter((tx) => {
+    const date = localDateKey(new Date(tx.date));
+    return (!from || date >= from) && (!to || date <= to);
+  });
+  const totalIncome = visibleTransactions.filter(t => t.type === "INCOME").reduce((sum, t) => sum + t.amount, 0);
+  const totalExpenses = visibleTransactions.filter(t => t.type === "EXPENSE").reduce((sum, t) => sum + t.amount, 0);
   const netBalance = totalIncome - totalExpenses;
+  const editingPayment = editingTx && readGigPayment(editingTx.description);
 
   if (isLoading) {
     return (
@@ -151,7 +207,7 @@ export default function FinancesPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in relative">
+    <div className="max-w-7xl mx-auto space-y-6 animate-fade-in relative">
       <header className="workspace-header">
         <div>
           <h1>Finances</h1>
@@ -162,7 +218,7 @@ export default function FinancesPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => openModal()}
-            className="w-full lg:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
+            className="workspace-primary"
           >
             <Plus className="w-5 h-5" />
             New Transaction
@@ -170,6 +226,23 @@ export default function FinancesPage() {
         )}
       </header>
 
+      {loadError && (
+        <section className="workspace-panel space-y-3" aria-label="Transaction Loading Error">
+          <p role="alert">Could not load transactions.</p>
+          <button type="button" className="workspace-secondary" onClick={() => {
+            setIsLoading(true);
+            void fetchData();
+          }}>Try Again</button>
+        </section>
+      )}
+
+      {!loadError && <>
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
+        <h2 className="text-lg font-semibold tracking-tight">Band Fund</h2>
+        <WorkspaceFilter title="Filter By Date Range" value={rangeLabel} active={hasRange}>
+          {(dismiss) => <TransactionDateFilter range={range} onApply={setRange} dismiss={dismiss} />}
+        </WorkspaceFilter>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card p-6 rounded-3xl relative overflow-hidden group">
           <div className="flex items-center justify-between mb-4">
@@ -205,18 +278,21 @@ export default function FinancesPage() {
       </div>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card rounded-3xl p-6">
-        <h2 className="text-xl font-bold text-white mb-6">Recent Transactions</h2>
-        <div className="space-y-4 max-h-[500px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {transactions.length === 0 ? (
+        <h2 className="text-xl font-bold text-white mb-6">Transactions</h2>
+        <div className="workspace-nav space-y-3 max-h-[500px] overflow-y-auto" role="region" aria-label="Transactions" tabIndex={0}>
+          {visibleTransactions.length === 0 ? (
             <div className="text-center py-12">
               <DollarSign className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-              <p className="text-zinc-400">No transactions recorded yet.</p>
+              <p className="text-zinc-400">{hasRange ? "No transactions in this date range." : "No transactions recorded yet."}</p>
             </div>
           ) : (
             <AnimatePresence>
-              {transactions.map((tx, i) => (
+              {visibleTransactions.map((tx, i) => {
+                const payment = readGigPayment(tx.description);
+                const title = payment?.title ?? tx.description;
+                return (
                 <motion.div 
-                  initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 * i }}
+                  initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.035 * Math.min(i, 5) }}
                   key={tx.id} 
                   className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl bg-black/20 hover:bg-black/40 transition-colors border border-zinc-800 group gap-4"
                 >
@@ -225,8 +301,13 @@ export default function FinancesPage() {
                       {tx.type === 'INCOME' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-zinc-200 line-clamp-2">{tx.description}</p>
-                      <p className="text-xs text-zinc-500">{new Date(tx.date).toLocaleDateString()}</p>
+                      {payment ? (
+                        <Link href={`/dashboard/gigs/${encodeURIComponent(payment.gigId)}`} className="break-words font-medium text-violet-200 hover:underline">{title}</Link>
+                      ) : <p className="break-words font-medium text-zinc-200">{title}</p>}
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-zinc-400">
+                        {payment && <span className="rounded-md bg-violet-400/15 px-2 py-0.5 font-medium text-violet-200">Gig Payment</span>}
+                        <time dateTime={tx.date}>{new Date(tx.date).toLocaleDateString(undefined, { dateStyle: "medium" })}</time>
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between md:justify-end shrink-0 w-full md:w-auto pl-14 md:pl-0 mt-3 md:mt-0">
@@ -235,17 +316,19 @@ export default function FinancesPage() {
                     </p>
                     {bandRole === "ADMIN" && (
                       <div className="transition-opacity flex items-center gap-2 md:border-l md:border-zinc-800 md:pl-4 md:ml-4">
-                        <button onClick={() => openModal(tx)} className="p-2 md:p-0 bg-zinc-800/50 md:bg-transparent rounded-lg text-zinc-400 hover:text-indigo-400"><Edit2 className="w-4 h-4 md:w-4 md:h-4" /></button>
-                        <button onClick={() => handleDelete(tx.id)} className="p-2 md:p-0 bg-zinc-800/50 md:bg-transparent rounded-lg text-zinc-400 hover:text-red-400"><Trash2 className="w-4 h-4 md:w-4 md:h-4" /></button>
+                        <button aria-label={`Edit ${title}`} onClick={() => openModal(tx)} className="workspace-icon-button"><Edit2 className="size-4" /></button>
+                        <button aria-label={`Delete ${title}`} onClick={() => handleDelete(tx.id)} className="workspace-icon-button hover:text-red-300"><Trash2 className="size-4" /></button>
                       </div>
                     )}
                   </div>
                 </motion.div>
-              ))}
+                );
+              })}
             </AnimatePresence>
           )}
         </div>
       </motion.div>
+      </>}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
@@ -260,13 +343,13 @@ export default function FinancesPage() {
             <h2 className="text-2xl font-bold text-white mb-6">{editingTx ? "Edit Transaction" : "Record Transaction"}</h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1.5">
+              {editingPayment ? <p className="text-sm text-violet-200">Gig Payment · Income</p> : <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-300 ml-1">Type</label>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => setType('INCOME')} className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${type === 'INCOME' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'glass text-zinc-400'}`}>Income</button>
                   <button type="button" onClick={() => setType('EXPENSE')} className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${type === 'EXPENSE' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'glass text-zinc-400'}`}>Expense</button>
                 </div>
-              </div>
+              </div>}
               
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-300 ml-1">Amount ($)</label>
@@ -278,6 +361,7 @@ export default function FinancesPage() {
                 <input type="text" required value={description} onChange={(e) => setDescription(e.target.value)} className="w-full glass-input rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="e.g. Gig payout - The Roxy" />
               </div>
 
+              {saveError && <p role="alert" className="text-sm text-red-300">{saveError}</p>}
               <div className="pt-4 flex gap-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 rounded-xl font-medium text-sm text-zinc-300 glass hover:bg-white/5 transition-colors">
                   Cancel

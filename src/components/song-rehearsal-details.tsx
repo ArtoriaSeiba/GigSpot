@@ -13,13 +13,17 @@ export function ChartPreview({ chart, from, to }: { chart: string; from?: string
       {message && <p className="text-sm text-amber-200">{message}</p>}
       {text ? (
         <pre className="max-h-72 overflow-auto rounded-xl border border-white/10 bg-black/20 p-3 font-mono text-sm leading-relaxed whitespace-pre-wrap wrap-break-word text-zinc-200">
-          {text.split(/(\[[^\]\n]+\])/).map((part, index) => part.startsWith("[") && part.endsWith("]")
-            ? <strong key={index} className="font-semibold text-violet-200">{part}</strong>
-            : part)}
+          <ChartText text={text} />
         </pre>
       ) : <p className="text-sm text-zinc-400">The chart has no playable text.</p>}
     </div>
   );
+}
+
+export function ChartText({ text }: { text: string }) {
+  return text.split(/(\[[^\]\n]+\])/).map((part, index) => part.startsWith("[") && part.endsWith("]")
+    ? <strong key={index} className="font-semibold text-violet-200">{part}</strong>
+    : part);
 }
 
 export function SongRehearsalDetails({ song }: { song: SongRehearsal }) {

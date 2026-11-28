@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import { inviteAuthCallback } from "@/lib/band-link-invites";
 
 const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { email, callback } = await req.json();
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -70,7 +71,10 @@ export async function POST(req: Request) {
 
     // Prepare email content
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+    const resetUrl = new URL("/reset-password", baseUrl);
+    resetUrl.searchParams.set("token", resetToken);
+    const invite = inviteAuthCallback(typeof callback === "string" ? callback : null);
+    if (invite) resetUrl.searchParams.set("callbackUrl", invite);
     
     let emailText = "";
     let emailHtml = "";
@@ -99,7 +103,7 @@ export async function POST(req: Request) {
       message: "If an account exists, a reset link has been sent."
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Forgot Password Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }

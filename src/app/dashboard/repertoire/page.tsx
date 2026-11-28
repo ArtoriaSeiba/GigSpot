@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Guitar, Music, NotebookPen, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronRight, Guitar, Music, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { WorkspaceDialog } from "@/components/workspace-dialog";
@@ -140,43 +140,36 @@ export default function RepertoirePage() {
         )}
         {songs.length > 0 && (
           <>
-            <label className="grid max-w-sm gap-2 text-sm font-medium">
-              <span>Find A Song</span>
-              <span className="relative block">
-                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-3.5 size-4 text-zinc-400" />
-                <input className="workspace-input pl-9" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Title or artist" />
-              </span>
-            </label>
-            <p role="status" className="text-sm text-zinc-400">{results.length} {results.length === 1 ? "song" : "songs"}{query.trim() && ` of ${songs.length}`}</p>
+            <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+              <label className="grid w-full max-w-sm gap-2 text-sm font-medium">
+                <span>Find A Song</span>
+                <span className="relative block">
+                  <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-3.5 size-4 text-zinc-400" />
+                  <input className="workspace-input pl-9" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Title or artist" />
+                </span>
+              </label>
+              <p role="status" className="py-1 text-sm tabular-nums text-zinc-400">{results.length} {results.length === 1 ? "song" : "songs"}{query.trim() && ` of ${songs.length}`}</p>
+            </div>
             {results.length === 0 && <p className="text-sm text-zinc-300">No matching songs. Try another title or artist.</p>}
             <ul className="divide-y divide-zinc-800">
               {results.map((song) => (
-                <li key={song.id} className="grid gap-2 px-2 py-3 transition-colors hover:bg-violet-400/5 sm:grid-cols-[minmax(0,1fr)_minmax(7rem,auto)_auto] sm:items-center sm:gap-4">
-                  <div className="min-w-0">
-                    <p className="break-words font-semibold">{song.title}</p>
-                    {song.artist && <p className="break-words text-sm text-zinc-400">{song.artist}</p>}
-                  </div>
-                  <p className="flex flex-wrap gap-x-3 text-sm text-zinc-300">
-                    {song.key && <span>Band Key {song.key}</span>}
-                    {song.tempo !== null && <span>{song.tempo} BPM</span>}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-1">
-                    <button type="button" className="workspace-secondary" aria-label={`Rehearsal Notes for ${song.title}`} onClick={() => setViewing(song)}>
-                      <NotebookPen aria-hidden="true" className="size-4" /> Rehearsal Notes
-                    </button>
-                    <Link href={`/dashboard/rehearse/${song.id}`} aria-label={`Launch AR from ${song.title}`} className="workspace-secondary">
-                      <Guitar aria-hidden="true" className="size-4" /> Launch AR
-                    </Link>
-                    {isAdmin && (
-                      <>
-                        <button type="button" className="workspace-icon-button" aria-label={`Edit ${song.title}`} onClick={() => openEditor(song)}><Pencil aria-hidden="true" className="size-4" /></button>
-                        <button type="button" className="workspace-icon-button hover:text-red-300" aria-label={`Delete ${song.title}`} onClick={() => {
-                          setFormError("");
-                          setDeleting(song);
-                        }}><Trash2 aria-hidden="true" className="size-4" /></button>
-                      </>
+                <li key={song.id}>
+                  <button type="button" aria-haspopup="dialog" aria-label={`View Song Details for ${song.title}`}
+                    className="group grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 rounded-lg px-2 py-3 text-left transition-colors hover:bg-violet-400/8 sm:grid-cols-[minmax(0,1fr)_minmax(0,auto)_auto]"
+                    onClick={() => setViewing(song)}
+                  >
+                    <span className="min-w-0">
+                      <span className="block wrap-break-word font-semibold group-hover:text-violet-100">{song.title}</span>
+                      {song.artist && <span className="block wrap-break-word text-sm text-zinc-400">{song.artist}</span>}
+                    </span>
+                    {(song.key || song.tempo !== null) && (
+                      <span className="col-start-1 row-start-2 flex min-w-0 flex-wrap gap-x-3 text-xs tabular-nums text-zinc-400 sm:col-start-2 sm:row-start-1 sm:text-sm">
+                        {song.key && <span className="wrap-break-word">Key {song.key}</span>}
+                        {song.tempo !== null && <span>{song.tempo} BPM</span>}
+                      </span>
                     )}
-                  </div>
+                    <ChevronRight aria-hidden="true" className="col-start-2 row-start-1 size-5 text-zinc-500 group-hover:text-violet-200 sm:col-start-3" />
+                  </button>
                 </li>
               ))}
             </ul>
@@ -191,7 +184,26 @@ export default function RepertoirePage() {
       )}
 
       {viewing && (
-        <WorkspaceDialog title={`Rehearsal Notes · ${viewing.title}`} busy={false} wide onDismiss={() => setViewing(undefined)}>
+        <WorkspaceDialog title={viewing.title} busy={false} wide onDismiss={() => setViewing(undefined)}>
+          <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-white/10 pb-4">
+            {viewing.artist && <p className="w-full wrap-break-word text-sm text-zinc-400">{viewing.artist}</p>}
+            <Link href={`/dashboard/rehearse/${encodeURIComponent(viewing.id)}`} className="workspace-secondary">
+              <Guitar aria-hidden="true" className="size-4" /> Launch AR
+            </Link>
+            {isAdmin && (
+              <>
+                <button type="button" className="workspace-secondary" onClick={() => {
+                  setViewing(undefined);
+                  openEditor(viewing);
+                }}><Pencil aria-hidden="true" className="size-4" /> Edit Song</button>
+                <button type="button" className="workspace-icon-button ml-auto hover:text-red-300" aria-label="Delete Song" onClick={() => {
+                  setViewing(undefined);
+                  setFormError("");
+                  setDeleting(viewing);
+                }}><Trash2 aria-hidden="true" className="size-4" /></button>
+              </>
+            )}
+          </div>
           <SongRehearsalDetails song={viewing} />
         </WorkspaceDialog>
       )}

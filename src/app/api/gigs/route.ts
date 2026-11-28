@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 
 import { getBandContext } from "@/lib/band-context";
 import { notifyBandMembers } from "@/lib/notifications";
+import { calendarRequest } from "@/lib/google-calendar";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -109,31 +110,14 @@ export async function DELETE(req: Request) {
     // Fetch all Google Calendar sync records for this gig
     const gigSyncs = await prisma.gigSync.findMany({
       where: { gigId },
-      include: {
-        user: {
-          include: {
-            accounts: {
-              where: { provider: "google" }
-            }
-          }
-        }
-      }
     });
 
     // Attempt to delete the event from Google Calendar for each synced user
     for (const sync of gigSyncs) {
-      const googleAccount = sync.user.accounts[0];
-      if (googleAccount && googleAccount.access_token) {
-        try {
-          await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${sync.googleEventId}`, {
-            method: "DELETE",
-            headers: {
-              "Authorization": `Bearer ${googleAccount.access_token}`
-            }
-          });
-        } catch (e) {
-          console.error(`Failed to delete event from Google Calendar for user ${sync.userId}`, e);
-        }
+      try {
+        await calendarRequest(sync.userId, `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(sync.googleEventId)}`, { method: "DELETE" });
+      } catch (e) {
+        console.error("Failed to delete event from Google Calendar", e);
       }
     }
 

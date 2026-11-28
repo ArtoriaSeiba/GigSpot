@@ -3,11 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { getBandContext } from "@/lib/band-context";
+import { calendarRequest } from "@/lib/google-calendar";
 
 const prisma = new PrismaClient();
 
 export async function POST(
-  req: Request,
+  _request: Request,
   { params }: { params: Promise<{ gigId: string }> }
 ) {
   try {
@@ -30,21 +31,6 @@ export async function POST(
 
     if (!gig || gig.bandId !== bandMember.bandId) {
       return NextResponse.json({ error: "Gig not found" }, { status: 404 });
-    }
-
-    // Get the Google Account linked to this user
-    const account = await prisma.account.findFirst({
-      where: {
-        userId: session.user.id,
-        provider: "google"
-      }
-    });
-
-    if (!account || !account.access_token) {
-      return NextResponse.json({ 
-        error: "Google account not linked",
-        code: "ACCOUNT_NOT_LINKED" 
-      }, { status: 400 });
     }
 
     const gigDate = new Date(gig.date);
@@ -73,40 +59,17 @@ export async function POST(
       }
     });
 
-    let googleRes;
-    
-    if (existingSync) {
-      // Update existing event
-      googleRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existingSync.googleEventId}`, {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${account.access_token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(event)
-      });
-    } else {
-      // Create new event
-      googleRes = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${account.access_token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(event)
-      });
+    const eventsUrl = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
+    const result = await calendarRequest(session.user.id, existingSync ? `${eventsUrl}/${encodeURIComponent(existingSync.googleEventId)}` : eventsUrl, {
+      method: existingSync ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(event),
+    });
+    if (!result.response) {
+      return NextResponse.json({ error: "Connect Google Calendar to continue.", code: result.code }, { status: 409 });
     }
-
-    if (!googleRes.ok) {
-      const errorData = await googleRes.json();
-      if (googleRes.status === 401) {
-        return NextResponse.json({ 
-          error: "Google session expired. Please sign out and sign back in with Google.",
-          code: "TOKEN_EXPIRED" 
-        }, { status: 401 });
-      }
-      throw new Error(errorData.error?.message || "Failed to sync with Google Calendar");
-    }
+    const googleRes = result.response;
+    if (!googleRes.ok) return NextResponse.json({ error: "Could not save this event to Google Calendar." }, { status: 502 });
 
     const data = await googleRes.json();
     
@@ -131,8 +94,8 @@ export async function POST(
 
     return NextResponse.json({ success: true, eventUrl: data.htmlLink });
     
-  } catch (error: any) {
+  } catch (error) {
     console.error("Calendar sync error:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Could not sync this gig. Try again." }, { status: 500 });
   }
 }

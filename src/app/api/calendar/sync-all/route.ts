@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { getBandContext } from "@/lib/band-context";
+import { calendarRequest } from "@/lib/google-calendar";
 
 const prisma = new PrismaClient();
 
@@ -16,21 +17,6 @@ export async function POST() {
     const bandMember = await getBandContext(session.user.id);
     if (!bandMember) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Get the Google Account linked to this user
-    const account = await prisma.account.findFirst({
-      where: {
-        userId: session.user.id,
-        provider: "google"
-      }
-    });
-
-    if (!account || !account.access_token) {
-      return NextResponse.json({ 
-        error: "Google account not linked",
-        code: "ACCOUNT_NOT_LINKED" 
-      }, { status: 400 });
     }
 
     // Fetch all upcoming gigs for the band
@@ -71,22 +57,19 @@ export async function POST() {
         end: { dateTime: endDate.toISOString() },
       };
 
-      const googleRes = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
+      const result = await calendarRequest(session.user.id, "https://www.googleapis.com/calendar/v3/calendars/primary/events", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${account.access_token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(event)
       });
 
+      if (!result.response) {
+        return NextResponse.json({ error: "Connect Google Calendar to continue.", code: result.code }, { status: 409 });
+      }
+      const googleRes = result.response;
       if (!googleRes.ok) {
-        if (googleRes.status === 401) {
-          return NextResponse.json({ 
-            error: "Google session expired. Please sign out and sign back in with Google.",
-            code: "TOKEN_EXPIRED" 
-          }, { status: 401 });
-        }
         errors.push(`Failed to sync ${gig.title}`);
         continue;
       }
@@ -114,8 +97,8 @@ export async function POST() {
       message: `Successfully synced ${syncedCount} gig(s) to your calendar.` 
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Sync All error:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Could not sync gigs. Try again." }, { status: 500 });
   }
 }

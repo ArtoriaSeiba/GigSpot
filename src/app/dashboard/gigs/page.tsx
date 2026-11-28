@@ -6,6 +6,16 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { buildWhatsAppUrl, formatGigCallSheet } from "@/lib/utils";
+import { WorkspaceDialog } from "@/components/workspace-dialog";
+
+const calendarFeedback: Record<string, string> = {
+  connected: "Google Calendar connected. Select Sync To Calendar again to finish.",
+  cancelled: "Calendar access was skipped. You can connect again any time.",
+  "wrong-account": "Choose the Google account you use to sign in to GigSpot.",
+  "link-required": "Sign in with Google to connect its calendar.",
+  unavailable: "Google Calendar connection is unavailable. Try again later.",
+  failed: "Could not connect Google Calendar. Try again from the sync action.",
+};
 
 type Gig = {
   id: string;
@@ -164,6 +174,7 @@ export default function DashboardPage() {
   const [income, setIncome] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const [calendarPrompt, setCalendarPrompt] = useState<"connect" | "sign-in">();
   const [bandRole, setBandRole] = useState("MUSICIAN");
 
   const openModal = (gig?: Gig) => {
@@ -216,6 +227,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchGigs();
+    const url = new URL(window.location.href);
+    const status = url.searchParams.get("calendar");
+    if (status && Object.hasOwn(calendarFeedback, status)) {
+      if (status === "connected") toast.success(calendarFeedback[status]);
+      else toast.error(calendarFeedback[status]);
+      url.searchParams.delete("calendar");
+      window.history.replaceState(null, "", url);
+    }
   }, []);
 
   const handleInviteResponse = async (inviteId: string, action: 'accept' | 'decline') => {
@@ -319,6 +338,9 @@ export default function DashboardPage() {
       const data = await res.json();
       if (res.ok) {
         toast.success(data.message, { id: toastId });
+      } else if (data.code === "CALENDAR_CONNECTION_REQUIRED" || data.code === "ACCOUNT_NOT_LINKED") {
+        toast.dismiss(toastId);
+        setCalendarPrompt(data.code === "CALENDAR_CONNECTION_REQUIRED" ? "connect" : "sign-in");
       } else {
         toast.error(data.error || "Failed to sync gigs", { id: toastId });
       }
@@ -397,8 +419,9 @@ END:VCALENDAR`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-      } else if (data.code === "TOKEN_EXPIRED") {
-        toast.error("Google session expired. Please sign out and sign back in with Google.", { id: toastId, duration: 5000 });
+      } else if (data.code === "CALENDAR_CONNECTION_REQUIRED") {
+        toast.dismiss(toastId);
+        setCalendarPrompt("connect");
       } else {
         toast.error(data.error || "Failed to sync calendar", { id: toastId });
       }
@@ -704,6 +727,19 @@ END:VCALENDAR`;
       )}
 
       {/* Add Gig Modal */}
+      {calendarPrompt && (
+        <WorkspaceDialog title="Connect Google Calendar" busy={false} onDismiss={() => setCalendarPrompt(undefined)}>
+          <p className="text-sm leading-relaxed text-zinc-300">
+            {calendarPrompt === "connect"
+              ? "Allow GigSpot to add and update gig events in the Google Calendar connected to your account."
+              : "Google Calendar sync is available when you use Google to sign in. From this account, you can export individual gigs as calendar files."}
+          </p>
+          <div className="mt-4 flex flex-wrap justify-end gap-2">
+            <button type="button" className="workspace-secondary" onClick={() => setCalendarPrompt(undefined)}>Close</button>
+            {calendarPrompt === "connect" && <a href="/api/calendar/connect" className="workspace-primary">Connect Calendar</a>}
+          </div>
+        </WorkspaceDialog>
+      )}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <motion.div 

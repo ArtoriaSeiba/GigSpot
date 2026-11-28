@@ -347,7 +347,7 @@ export function SongEditor({ song, busy, error, onSave, onCancel }: {
 
         <section className="mt-4 space-y-3 border-t border-white/10 pt-4">
           <h3 className="font-semibold">Chord Chart</h3>
-          <ChartLinkImport enabled={services?.jamJam === true} hasChart={Boolean(draft.chordChart.trim())} onApply={applyLinkedChart} />
+          <ChartLinkImport originalKey={draft.originalKey} hasChart={Boolean(draft.chordChart.trim())} onApply={applyLinkedChart} />
           <p className="text-sm text-zinc-400">Import from a link or paste a chart. Use square brackets for chords in lyrics, or write chords on their own line.</p>
           {chartStatus && <p role="status" className="text-sm text-violet-200">{chartStatus}</p>}
           <div className="grid max-w-lg grid-cols-2 gap-3">

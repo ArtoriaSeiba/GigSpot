@@ -2,10 +2,8 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
-import { Users } from "lucide-react";
-import { GigSpotBrand } from "@/components/gigspot-brand";
-import { GoogleMark } from "@/components/google-mark";
+import { AuthLayout } from "@/components/auth-layout";
+import { GoogleContinue } from "@/components/auth-controls";
 import { inviteAuthHref, isBandLinkToken, type BandLinkPreview } from "@/lib/band-link-invites";
 import { WorkspaceRequestError, workspaceErrorMessage, workspaceMutation, workspaceRequest } from "@/lib/workspace-requests";
 
@@ -27,8 +25,6 @@ function InviteCard({ token }: { token: string }) {
   const [attempt, setAttempt] = useState(0);
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState("");
-  const [googlePending, setGooglePending] = useState(false);
-  const [googleError, setGoogleError] = useState(false);
   const callback = isBandLinkToken(token) ? `/invite/${token}` : null;
 
   useEffect(() => {
@@ -69,34 +65,14 @@ function InviteCard({ token }: { token: string }) {
     }
   }
 
-  async function continueWithGoogle() {
-    if (!callback || googlePending) return;
-    setGooglePending(true);
-    setGoogleError(false);
-    try {
-      await signIn("google", { callbackUrl: callback });
-    } catch {
-      setGoogleError(true);
-    } finally {
-      setGooglePending(false);
-    }
-  }
-
   const status = callback ? preview?.status : "invalid";
   const available = status === "pending" || status === "already-member";
   const problem = status && status !== "pending" && status !== "already-member" ? unavailable[status] : null;
 
   return (
-    <main className="workspace-shell grid min-h-dvh place-items-center p-4">
-      <section className="workspace-panel w-full max-w-lg space-y-6" aria-label="Band Invitation">
-        <GigSpotBrand />
-        <div className="space-y-2">
-          <Users aria-hidden="true" className="size-7 text-violet-200" />
-          <h1 className="break-words text-2xl font-bold tracking-tight">
-            {available ? preview?.bandName : problem?.title ?? "Band Invitation"}
-          </h1>
-          {available && <p className="text-sm text-zinc-300">{status === "already-member" ? "You already belong to this band." : "You’re invited to join as a Musician."}</p>}
-          {problem && <p className="text-sm text-zinc-300">{problem.text}</p>}
+    <AuthLayout title={available ? preview?.bandName ?? "Band Invitation" : problem?.title ?? "Band Invitation"}
+      description={available ? status === "already-member" ? "You already belong to this band." : "You’re invited to join as a Musician." : problem?.text}>
+        <div className="empty:hidden space-y-2">
           {!status && !loadError && <p role="status" className="text-sm text-zinc-300">Loading Invitation…</p>}
           {loadError && <p role="alert" className="text-sm text-red-300">Could not load the invite. Check your connection and try again.</p>}
           {joinError && <p role="alert" className="text-sm text-red-300">{joinError}</p>}
@@ -110,12 +86,9 @@ function InviteCard({ token }: { token: string }) {
               </button>
             ) : (
               <div className="w-full space-y-3">
-                <button type="button" onClick={() => void continueWithGoogle()} disabled={googlePending} className="workspace-primary sm:w-full">
-                  <GoogleMark /> {googlePending ? "Opening Google…" : "Continue With Google"}
-                </button>
-                {googleError && <p role="alert" className="text-sm text-red-300">Could not open Google sign-in. Try again or sign in with email.</p>}
+                {callback && <GoogleContinue destination={callback} />}
                 <div className="grid grid-cols-2 gap-2">
-                  <Link href={inviteAuthHref("/login", callback)} className="workspace-secondary">Sign In</Link>
+                  <Link href={inviteAuthHref("/login", callback)} className="workspace-secondary">Sign In With Email</Link>
                   <Link href={inviteAuthHref("/register", callback)} className="workspace-secondary">Create Account</Link>
                 </div>
               </div>
@@ -125,7 +98,6 @@ function InviteCard({ token }: { token: string }) {
         )}
         {loadError && <button type="button" className="workspace-secondary" onClick={refreshPreview}>Try Again</button>}
         {problem && <Link href={preview?.signedIn ? "/dashboard" : "/"} className="workspace-secondary">{preview?.signedIn ? "Go To Dashboard" : "Go To Homepage"}</Link>}
-      </section>
-    </main>
+    </AuthLayout>
   );
 }

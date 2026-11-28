@@ -1,4 +1,5 @@
 import { NextAuthOptions } from "next-auth";
+import type { Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
@@ -8,12 +9,13 @@ import { compare } from "bcrypt";
 const prisma = new PrismaClient();
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+  adapter: PrismaAdapter(prisma) as Adapter,
   session: {
     strategy: "jwt",
   },
   pages: {
     signIn: "/login",
+    error: "/login",
   },
   providers: [
     GoogleProvider({
@@ -22,9 +24,7 @@ export const authOptions: NextAuthOptions = {
       allowDangerousEmailAccountLinking: true,
       authorization: {
         params: {
-          scope: "openid email profile https://www.googleapis.com/auth/calendar.events",
-          access_type: "offline",
-          prompt: "consent",
+          scope: "openid email profile",
         },
       },
     }),
@@ -58,41 +58,20 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === "google") {
-        try {
-          await prisma.account.updateMany({
-            where: {
-              provider: "google",
-              providerAccountId: account.providerAccountId,
-            },
-            data: {
-              access_token: account.access_token,
-              expires_at: account.expires_at,
-              refresh_token: account.refresh_token,
-            }
-          });
-        } catch (e) {
-          console.error("Failed to update Google tokens", e);
-        }
-      }
-      return true;
+    async signIn({ account, profile }) {
+      return account?.provider !== "google" || (profile as { email_verified?: boolean } | undefined)?.email_verified === true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
-      }
-      if (account) {
-        token.accessToken = account.access_token;
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        (session.user as any).id = token.id as string;
-        (session.user as any).role = token.role as string;
-        (session as any).accessToken = token.accessToken as string | undefined;
+        session.user.id = typeof token.id === "string" ? token.id : token.sub ?? "";
+        session.user.role = typeof token.role === "string" ? token.role : "MUSICIAN";
       }
       return session;
     }

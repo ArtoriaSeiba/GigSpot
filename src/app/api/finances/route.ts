@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { getBandContext } from "@/lib/band-context";
+import { readGigPayment } from "@/lib/gig-payment-description";
 
 const prisma = new PrismaClient();
 
@@ -33,6 +34,9 @@ export async function POST(req: Request) {
 
   try {
     const { type, amount, description, date } = await req.json();
+    if (typeof description !== "string" || !description.trim() || readGigPayment(description.trim())) {
+      return NextResponse.json({ error: "Enter a transaction description without a gig payment reference." }, { status: 400 });
+    }
 
     const transaction = await prisma.financeTransaction.create({
       data: {
@@ -66,12 +70,22 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    const payment = readGigPayment(existingTx.description);
+    if (typeof description !== "string" || !description.trim()) {
+      return NextResponse.json({ error: "Enter a transaction description." }, { status: 400 });
+    }
+    const descriptionText = description.trim();
+    const suppliedPayment = readGigPayment(descriptionText);
+    if (suppliedPayment && suppliedPayment.gigId !== payment?.gigId) {
+      return NextResponse.json({ error: "The gig payment reference cannot be changed." }, { status: 400 });
+    }
+
     const updatedTx = await prisma.financeTransaction.update({
       where: { id },
       data: {
-        type,
+        type: payment ? "INCOME" : type,
         amount: parseFloat(amount),
-        description,
+        description: payment ? `[GIG_PAYMENT:${payment.gigId}] ${suppliedPayment?.description ?? descriptionText}` : descriptionText,
       }
     });
 

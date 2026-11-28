@@ -1,103 +1,61 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Send, Loader2, ArrowLeft } from "lucide-react";
+import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import { useSearchParams } from "next/navigation";
+import { AuthLayout } from "@/components/auth-layout";
+import { AuthMessage } from "@/components/auth-controls";
+import { inviteAuthCallback, inviteAuthHref } from "@/lib/band-link-invites";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  return <Suspense fallback={<div className="workspace-shell min-h-dvh" />}><ForgotForm /></Suspense>;
+}
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+function ForgotForm() {
+  const callback = inviteAuthCallback(useSearchParams().get("callbackUrl"));
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [preview, setPreview] = useState("");
+  const [error, setError] = useState("");
 
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const email = String(new FormData(event.currentTarget).get("email")).trim();
+    setBusy(true);
+    setError("");
     try {
-      const res = await fetch("/api/auth/forgot-password", {
+      const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email, callback }),
       });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setIsSuccess(true);
-        // Automatically open the Ethereal email preview if provided (for local testing only)
-        if (data.previewUrl) {
-          toast.success("Check the console for the Ethereal email preview URL!");
-          console.log("ETHEREAL EMAIL PREVIEW URL:", data.previewUrl);
-          // Optional: window.open(data.previewUrl, "_blank");
-        } else {
-          toast.success(data.message);
-        }
-      } else {
-        toast.error(data.error || "Failed to send reset link");
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Could not send the reset link. Try again.");
+        return;
       }
-    } catch (error) {
-      toast.error("Network error");
+      if (process.env.NODE_ENV === "development" && typeof data.previewUrl === "string") setPreview(data.previewUrl);
+      setSent(true);
+    } catch {
+      setError("Could not connect. Try again.");
     } finally {
-      setIsLoading(false);
+      setBusy(false);
     }
-  };
+  }
 
   return (
-    <div className="workspace-shell min-h-screen flex items-center justify-center p-4">
-      {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none" />
-      
-      <div className="w-full max-w-md relative z-10">
-        <div className="glass-card rounded-3xl p-8 shadow-2xl">
-          <div className="text-center mb-8">
-            <h1 className="mb-2 text-3xl font-bold tracking-tight text-white">
-              Forgot Password
-            </h1>
-            <p className="text-sm text-zinc-400">Enter your email to receive a reset link.</p>
-          </div>
-
-          {!isSuccess ? (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-300 ml-1">Email</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all placeholder:text-zinc-600"
-                  placeholder="musician@example.com"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading || !email}
-                className="workspace-primary mt-4 w-full sm:w-full"
-              >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {isLoading ? "Sending..." : "Send Reset Link"}
-              </button>
-            </form>
-          ) : (
-            <div className="p-6 bg-emerald-900/20 border border-emerald-500/20 rounded-xl text-center space-y-4">
-              <h3 className="text-emerald-400 font-bold">Email Sent!</h3>
-              <p className="text-sm text-zinc-300">
-                If an account exists for that email, a password reset link has been sent. Please check your inbox.
-              </p>
-            </div>
-          )}
-
-          <div className="mt-8 text-center">
-            <Link href="/login" className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              Back To Login
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+    <AuthLayout title={sent ? "Check Your Email" : "Forgot Password"} description={sent
+      ? "If an account exists for that address, you’ll receive a link to reset your password."
+      : "Enter your email to request a password reset link."}>
+      {sent ? preview && <a href={preview} target="_blank" rel="noreferrer" className="workspace-secondary">Open Test Email</a> : (
+        <form onSubmit={submit} className="space-y-4">
+          {error && <AuthMessage>{error}</AuthMessage>}
+          <label className="grid gap-1.5 text-sm font-medium">Email<input type="email" name="email" autoComplete="email" required className="workspace-input" /></label>
+          <button type="submit" disabled={busy} className="workspace-primary w-full sm:w-full">{busy ? "Sending…" : "Send Reset Link"}</button>
+        </form>
+      )}
+      <Link href={inviteAuthHref("/login", callback)} className="block text-sm font-semibold text-violet-200 hover:underline">Back To Sign In</Link>
+    </AuthLayout>
   );
 }
